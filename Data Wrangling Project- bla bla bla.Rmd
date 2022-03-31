@@ -1,0 +1,86 @@
+---
+title: "Data Wrangling Project: U.S. Beef Industry"
+author: "Erdal Erol"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    theme: spacelab
+    toc: true
+    toc_float: true
+    toc_depth: 4
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE, warning= FALSE, message = FALSE)
+```
+
+```{r klippy, echo=FALSE, include=TRUE}
+#remotes::install_github("rlesur/klippy")
+klippy::klippy(position = c('top', 'right'))
+```
+
+# Synopsis
+
+# Packages Required
+
+```{r packages}
+#install.packages("...")
+library(tidyverse)
+library(ggplot2)
+library(nycflights13)
+library(data.table)
+library(tidyfast)
+library(dtplyr)
+```
+
+# 1. Introduction
+
+# 2. Data
+
+production
+
+* cattle
+* beef 
+
+trade
+
+* x
+* m
+
+market
+
+* supply
+* prices
+* products
+
+consumption
+
+* per capita data
+
+geo data
+
+* location of farms
+* others
+
+
+## 2.1. Data Sources
+## 2.2. Data Preparation
+
+# 3. Explanatory Data Analysis
+## 3.1. Federal Level
+
+## 3.2. State Level
+
+## 3.3. Kentucky
+
+
+# Summary
+
+# References
+
+
+ *external server*
+<a href="https://selectorgadget.com/" target="_blank">SelectorGadget</a>
+
+
+
