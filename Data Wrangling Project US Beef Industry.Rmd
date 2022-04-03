@@ -33,6 +33,7 @@ library(nycflights13)
 library(data.table)
 library(tidyfast)
 library(dtplyr)
+library(readxl)
 
 #mapping
 library(cartography) 
