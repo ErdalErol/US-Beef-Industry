@@ -1,13 +1,16 @@
 ---
-title: "Data Wrangling Project: U.S. Beef Industry"
+title: "U.S. Beef Industry"
 author: "Erdal Erol"
 date: "`r Sys.Date()`"
 output: 
-  html_document:
-    theme: spacelab
-    toc: true
-    toc_float: true
-    toc_depth: 4
+  rmdformats::html_clean:
+    self_contained: true
+    thumbnails: true
+    lightbox: true
+    gallery: true
+    highlight: tango
+
+
 ---
 
 ```{r setup, include = FALSE}
@@ -39,8 +42,8 @@ library(readxl)
 library(cartography) 
 library(rgdal)
 library(sp)
-library("rnaturalearth")
-library("rnaturalearthdata")
+library(rnaturalearth)
+library(rnaturalearthdata)
 library(usmap)
 ```
 
@@ -64,37 +67,161 @@ setnames(cattleinv_data,  "TOTAL, NOT SPECIFIED in HEAD", "number")
 beef_cattle = cattleinv_data[COMMODITY=="CATTLE, COWS, BEEF"]
 beef_cattle = beef_cattle[, c("COMMODITY"):= NULL]
 beef_cattle_states = beef_cattle[2:51]
+beef_cattle_states[, number:= number/1000]
+
+setorderv(beef_cattle_states, cols="number",  order=-1L, na.last=TRUE)
+
+head(beef_cattle_states,10)
+
 total = beef_cattle[1]
+total[, number:= number/1000]
 total
 ```
 
 
 
 ```{r}
-plot_usmap(data = beef_cattle_states, values = "number", labels = TRUE,  color = "black")  + 
+plot = 
+  plot_usmap(data = beef_cattle_states, values = "number", labels = TRUE,  color = "black")  + 
   scale_fill_continuous(name = "Beef Cattle Inventory",  low = "lightblue", high = "blue", label = scales::comma) + 
-  labs(title = "U.S. Beef Cattle Inventory, by State-January 1, 2021") +
+  labs(title = "U.S. Beef Cattle Inventory, by State-January 1, 2021-1000 heads") +
   theme(legend.position = "right")
 
+# Set label font size
+plot$layers[[2]]$aes_params$size <- 1.5
+print(plot)
+
 ```
 
 ```{r}
 
 ```
 
-* beef 
+* beef production and consumption
 ```{r}
+beef_prod_data = read_excel("data/yearly beef production.xlsx")
+beef_prod_data = as.data.table(beef_prod_data)
 
+str(beef_prod_data)
+```
 
+```{r}
+ggplot(beef_prod_data, aes(x=year, y=production )) + 
+  geom_line()+
+  labs(title="U.S. Beef Production", 
+       caption="Source: USDA", 
+       y="1000 lbs", 
+       color=NULL) +  # title and caption
+  scale_color_manual(labels = c("psavert", "uempmed"), 
+                     values = c("psavert"="#00ba38", "uempmed"="#f8766d")) +  # line color
+  theme(axis.text.x = element_text(angle = 90, vjust=0.5, size = 8),  # rotate x axis text
+        panel.grid.minor = element_blank())  # turn off minor grid
+```
+```{r}
+ggplot(beef_prod_data, aes(x=year, y=population/1000 )) + 
+  geom_line()+
+  labs(title="U.S. Population", 
+       caption="Source: USDA", 
+       y="1000 people", 
+       color=NULL) +  # title and caption
+ scale_color_manual(labels = c("psavert", "uempmed"), 
+                     values = c("psavert"="#00ba38", "uempmed"="#f8766d")) +  # line color
+  theme(axis.text.x = element_text(angle = 90, vjust=0.5, size = 8),  # rotate x axis text
+        panel.grid.minor = element_blank())  # turn off minor grid
+```
+
+```{r}
+ggplot(beef_prod_data, aes(x=year, y=carcass_weight )) + 
+  geom_line()+
+  labs(title="Per capita Consumption", 
+       caption="Source: USDA", 
+       y="lbs.", 
+       color=NULL) +  # title and caption
+ scale_color_manual(labels = c("psavert", "uempmed"), 
+                     values = c("psavert"="#00ba38", "uempmed"="#f8766d")) +  # line color
+  theme(axis.text.x = element_text(angle = 90, vjust=0.5, size = 8),  # rotate x axis text
+        panel.grid.minor = element_blank())  # turn off minor grid
 ```
 
 
-```{r}
-
-
-```
 trade
 
+* cattle
+
+* x
+```{r}
+export_data_cattle = read_excel("data/cattle_trade.xlsx", sheet = "export")
+
+export_data_cattle = melt(export_data_cattle, id.vars ="country",
+variable.name = "year", value.name = "export")
+
+export_data_cattle = as.data.table(export_data_cattle, key="country")
+export_data_cattle[, export:=export/1000]
+```
+
+```{r}
+cattle_exports = export_data_cattle[year =="2021"]
+setorderv(cattle_exports, cols="export",  order=-1L, na.last=TRUE)
+head(cattle_exports,10)
+```
+
+```{r}
+data= head(cattle_exports,10)[2:10]
+data[, export:=export*100/509.576]
+ggplot(data, aes(x="", y=export, fill=country)) +
+  labs(title="Cattle Exports-Country Share", 
+       caption="Source: USDA", 
+       y="%.", 
+       color=NULL) +  # title and caption
+  geom_bar(stat="identity", width=1) +
+  coord_polar("y", start=0)
+```
+
+* m
+```{r}
+import_data_cattle = read_excel("data/cattle_trade.xlsx", sheet = "import")
+
+import_data_cattle = melt(import_data_cattle, id.vars ="country",
+variable.name = "year", value.name = "import")
+
+import_data_cattle = as.data.table(import_data_cattle, key = "country")
+
+import_data_cattle[, import:=import/1000]
+```
+
+```{r}
+cattle_imports = import_data_cattle[year =="2021" ]
+setorderv(cattle_imports, cols="import",  order=-1L, na.last=TRUE)
+head(cattle_imports,10)
+```
+
+```{r}
+data= head(cattle_imports,10)[2:10]
+data[, import:=import*100/1775.492]
+ggplot(data, aes(x="", y=import, fill=country)) +
+    labs(title="Cattle Imports-Country Share", 
+       caption="Source: USDA", 
+       y="%.", 
+       color=NULL) +  # title and caption
+  geom_bar(stat="identity", width=1) +
+  coord_polar("y", start=0)
+```
+
+* combine
+```{r}
+cattle_trade_data = merge( export_data_cattle,import_data_cattle, by = c("country", "year"), all=T)
+cattle_trade_data = cattle_trade_data[, trade_balance:= export-import] 
+cattle_trade_data = cattle_trade_data[, us_status:= ifelse(trade_balance<0, "net_importer", "net_exporter")] 
+
+total_cattle_trade = cattle_trade_data[country=="total"]
+setorder(total_cattle_trade, cols = -"year") 
+head(total_cattle_trade,5)
+
+```
+
+* beef
+
+* x
 ```{r}
 export_data <- read_excel("data/beef_trade.xlsx", sheet = "export")
 
@@ -102,8 +229,27 @@ export_data = melt(export_data, id.vars ="country",
 variable.name = "year", value.name = "export")
 
 export_data = as.data.table(export_data, key="country")
-export_data
+export_data[, export:=export/1000]
 ```
+
+```{r}
+beef_exports = export_data[year =="2021"]
+setorderv(beef_exports, cols="export",  order=-1L, na.last=TRUE)
+head(beef_exports,10)
+```
+
+```{r}
+data= head(beef_exports,10)[2:10]
+data[, export:=export*100/3447.0693	]
+ggplot(data, aes(x="", y=export, fill=country)) +
+    labs(title="Beef Exports-Country Share", 
+       caption="Source: USDA", 
+       y="%", 
+       color=NULL) +  # title and caption
+  geom_bar(stat="identity", width=1) +
+  coord_polar("y", start=0)
+```
+
 * m
 ```{r}
 import_data <- read_excel("data/beef_trade.xlsx", sheet = "import")
@@ -112,41 +258,52 @@ import_data = melt(import_data, id.vars ="country",
 variable.name = "year", value.name = "import")
 
 import_data = as.data.table(import_data, key = "country")
-import_data
+import_data[, import:=import/1000]
+```
+
+
+```{r}
+beef_imports = import_data[year =="2021"]
+setorderv(beef_imports, cols="import",  order=-1L, na.last=TRUE)
+head(beef_imports,10)
 ```
 
 ```{r}
-trade_data = merge( export_data,import_data, by = c("country", "year"), all=T)
-trade_data = trade_data[, trade_balance:= export-import] 
-trade_data = trade_data[, us_status:= ifelse(trade_balance<0, "net_importer", "net_exporter")] 
+data= head(beef_imports,10)[2:10]
+data[, import:=import*100/3447.0693	]
+ggplot(data, aes(x="", y=import, fill=country)) +
+    labs(title="Beef Imports-Country Share", 
+       caption="Source: USDA", 
+       y="%", 
+       color=NULL) +  # title and caption
+  geom_bar(stat="identity", width=1) +
+  coord_polar("y", start=0)
+```
 
-trade_data[country=="Japan" & year=="2021" ]
+* combined
+```{r}
+beef_trade_data = merge( export_data,import_data, by = c("country", "year"), all=T)
+beef_trade_data = beef_trade_data[, trade_balance:= export-import] 
+beef_trade_data = beef_trade_data[, us_status:= ifelse(trade_balance<0, "net_importer", "net_exporter")] 
 
-total_trade = trade_data[country=="total" ]
-setorder(total_trade, cols = -"year") 
-total_trade
+beef_total_trade = beef_trade_data[country=="total" ]
+setorder(beef_total_trade, cols = -"year") 
+head(total_trade,5)
 
 ```
+
+
+
 
 
 market
 
-* supply
-
 
 * prices
+```{r}
+beef_price_data = read_excel("data/prices.xlsx")
 
-
-* products
-
-consumption
-
-* per capita data
-
-geo data
-
-* location of farms
-* others
+```
 
 
 ## 2.1. Data Sources
