@@ -1712,12 +1712,15 @@ Industry</h1>
 <div id="packages-required" class="section level1">
 <h1>Packages Required</h1>
 <pre class="r"><code>#install.packages(&quot;...&quot;)
+
+#data wrangling
 library(tidyverse)
 library(ggplot2)
 library(nycflights13)
 library(data.table)
 library(tidyfast)
 library(dtplyr)
+library(readxl)
 
 #mapping
 library(cartography) 
@@ -1736,15 +1739,19 @@ library(usmap)</code></pre>
 <ul>
 <li>cattle</li>
 </ul>
-<pre class="r"><code>cattleinv_data =  read_csv(&quot;data/CATTLE-InventoryJanuary1-2022-04-03.csv&quot;)
+<pre class="r"><code>cattleinv_data =  read_csv(&quot;data/cattle inventory.csv&quot;)
 cattleinv_data= as.data.table(cattleinv_data)
 cattleinv_data = cattleinv_data[, c(&quot;YEAR&quot;,&quot;REFERENCE PERIOD&quot;, &quot;STATE ANSI&quot;):= NULL]
 setnames(cattleinv_data,  &quot;LOCATION&quot;,&quot;state&quot;)
 setnames(cattleinv_data,  &quot;TOTAL, NOT SPECIFIED in HEAD&quot;, &quot;number&quot;)</code></pre>
 <pre class="r"><code>beef_cattle = cattleinv_data[COMMODITY==&quot;CATTLE, COWS, BEEF&quot;]
 beef_cattle = beef_cattle[, c(&quot;COMMODITY&quot;):= NULL]
-beef_cattle = beef_cattle[2:51]</code></pre>
-<pre class="r"><code>plot_usmap(data = beef_cattle, values = &quot;number&quot;, labels = TRUE,  color = &quot;black&quot;)  + 
+beef_cattle_states = beef_cattle[2:51]
+total = beef_cattle[1]
+total</code></pre>
+<pre><code>##       state   number
+## 1: US TOTAL 30843600</code></pre>
+<pre class="r"><code>plot_usmap(data = beef_cattle_states, values = &quot;number&quot;, labels = TRUE,  color = &quot;black&quot;)  + 
   scale_fill_continuous(name = &quot;Beef Cattle Inventory&quot;,  low = &quot;lightblue&quot;, high = &quot;blue&quot;, label = scales::comma) + 
   labs(title = &quot;U.S. Beef Cattle Inventory, by State-January 1, 2021&quot;) +
   theme(legend.position = &quot;right&quot;)</code></pre>
@@ -1753,15 +1760,97 @@ beef_cattle = beef_cattle[2:51]</code></pre>
 <li>beef</li>
 </ul>
 <p>trade</p>
+<pre class="r"><code>export_data &lt;- read_excel(&quot;data/beef_trade.xlsx&quot;, sheet = &quot;export&quot;)
+
+export_data = melt(export_data, id.vars =&quot;country&quot;,
+variable.name = &quot;year&quot;, value.name = &quot;export&quot;)
+
+export_data = as.data.table(export_data, key=&quot;country&quot;)
+export_data</code></pre>
+<pre><code>##           country year  export
+##    1: Afghanistan 1989      NA
+##    2: Afghanistan 1990      NA
+##    3: Afghanistan 1991      NA
+##    4: Afghanistan 1992      NA
+##    5: Afghanistan 1993      NA
+##   ---                         
+## 7157:       total 2017 2859328
+## 7158:       total 2018 3159525
+## 7159:       total 2019 3026287
+## 7160:       total 2020 2951219
+## 7161:       total 2021 3447069</code></pre>
 <ul>
-<li>x</li>
 <li>m</li>
 </ul>
+<pre class="r"><code>import_data &lt;- read_excel(&quot;data/beef_trade.xlsx&quot;, sheet = &quot;import&quot;)
+
+import_data = melt(import_data, id.vars =&quot;country&quot;,
+variable.name = &quot;year&quot;, value.name = &quot;import&quot;)
+
+import_data = as.data.table(import_data, key = &quot;country&quot;)
+import_data</code></pre>
+<pre><code>##         country year    import
+##    1: Argentina 1989  189568.0
+##    2: Argentina 1990  209306.9
+##    3: Argentina 1991  260908.1
+##    4: Argentina 1992  194637.2
+##    5: Argentina 1993  161809.3
+##   ---                         
+## 3098:     total 2017 2992980.5
+## 3099:     total 2018 2997939.8
+## 3100:     total 2019 3057794.2
+## 3101:     total 2020 3341608.6
+## 3102:     total 2021 3347515.5</code></pre>
+<pre class="r"><code>trade_data = merge( export_data,import_data, by = c(&quot;country&quot;, &quot;year&quot;), all=T)
+trade_data = trade_data[, trade_balance:= export-import] 
+trade_data = trade_data[, us_status:= ifelse(trade_balance&lt;0, &quot;net_importer&quot;, &quot;net_exporter&quot;)] 
+
+trade_data[country==&quot;Japan&quot; &amp; year==&quot;2021&quot; ]</code></pre>
+<pre><code>##    country year   export  import trade_balance    us_status
+## 1:   Japan 2021 826384.9 3595.28      822789.6 net_exporter</code></pre>
+<pre class="r"><code>total_trade = trade_data[country==&quot;total&quot; ]
+setorder(total_trade, cols = -&quot;year&quot;) 
+total_trade</code></pre>
+<pre><code>##     country year    export  import trade_balance    us_status
+##  1:   total 2021 3447069.3 3347516     99553.781 net_exporter
+##  2:   total 2020 2951219.2 3341609   -390389.384 net_importer
+##  3:   total 2019 3026286.9 3057794    -31507.304 net_importer
+##  4:   total 2018 3159525.1 2997940    161585.342 net_exporter
+##  5:   total 2017 2859328.2 2992981   -133652.284 net_importer
+##  6:   total 2016 2556981.6 3011718   -454736.022 net_importer
+##  7:   total 2015 2267287.4 3368305  -1101017.143 net_importer
+##  8:   total 2014 2573754.1 2946883   -373128.460 net_importer
+##  9:   total 2013 2588378.7 2249677    338702.073 net_exporter
+## 10:   total 2012 2452498.8 2219784    232715.281 net_exporter
+## 11:   total 2011 2785059.1 2056525    728533.655 net_exporter
+## 12:   total 2010 2299607.2 2297923      1683.988 net_exporter
+## 13:   total 2009 1934758.9 2626157   -691397.687 net_importer
+## 14:   total 2008 1996299.3 2538146   -541847.187 net_importer
+## 15:   total 2007 1433964.2 3052164  -1618199.809 net_importer
+## 16:   total 2006 1144875.0 3084666  -1939791.475 net_importer
+## 17:   total 2005  697157.9 3598509  -2901351.049 net_importer
+## 18:   total 2004  460314.4 3679232  -3218917.902 net_importer
+## 19:   total 2003 2518248.6 3005910   -487661.664 net_importer
+## 20:   total 2002 2447704.2 3217599   -769894.728 net_importer
+## 21:   total 2001 2269282.9 3163356   -894073.052 net_importer
+## 22:   total 2000 2468399.7 3032373   -563973.672 net_importer
+## 23:   total 1999 2411533.1 2873069   -461536.067 net_importer
+## 24:   total 1998 2170641.6 2643105   -472463.037 net_importer
+## 25:   total 1997 2135680.3 2344225   -208545.015 net_importer
+## 26:   total 1996 1878216.3 2072729   -194512.457 net_importer
+## 27:   total 1995 1820811.5 2103686   -282874.392 net_importer
+## 28:   total 1994 1610797.9 2371622   -760824.218 net_importer
+## 29:   total 1993 1275014.0 2401718  -1126704.180 net_importer
+## 30:   total 1992 1323787.1 2440563  -1116775.503 net_importer
+## 31:   total 1991 1188521.5 2407655  -1219133.617 net_importer
+## 32:   total 1990 1006343.6 2356333  -1349989.156 net_importer
+## 33:   total 1989 1135197.4 2179187  -1043990.053 net_importer
+##     country year    export  import trade_balance    us_status</code></pre>
 <p>market</p>
 <ul>
-<li>supply</li>
-<li>prices</li>
-<li>products</li>
+<li><p>supply</p></li>
+<li><p>prices</p></li>
+<li><p>products</p></li>
 </ul>
 <p>consumption</p>
 <ul>
