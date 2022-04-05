@@ -9,9 +9,8 @@ output:
     lightbox: true
     gallery: true
     highlight: tango
-
-
 ---
+
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, error = TRUE, warning= FALSE, message = FALSE)
@@ -37,6 +36,7 @@ library(data.table)
 library(tidyfast)
 library(dtplyr)
 library(readxl)
+library(ggrepel)
 
 #mapping
 library(cartography) 
@@ -45,15 +45,62 @@ library(sp)
 library(rnaturalearth)
 library(rnaturalearthdata)
 library(usmap)
+
+#data
+library(tidyUSDA)
 ```
 
 # 1. Introduction
 
 # 2. Data
 
-production
 
-* cattle
+
+
+
+
+
+
+* tidyUSDA Package
+
+```{r}
+# key = 'D16D4292-FA76-3FA5-9D88-EE8C5F5574CC'
+# tidyUSDA::allCategory %>% head()
+# tidyUSDA::allGeogLevel %>% head()
+# beef_cattle_operations = tidyUSDA::getQuickstat(
+#   sector=NULL,
+#   group=NULL,
+#   commodity=NULL,
+#   category=NULL,
+#   domain='TOTAL',
+#   county=NULL,
+#   key = key,
+#   program = 'CENSUS',
+#   data_item = 'CATTLE, COWS, BEEF - OPERATIONS WITH INVENTORY',
+#   geographic_level = 'STATE',
+#   year = '2017',
+#   state = NULL,
+#   geometry = TRUE,
+#   lower48 = TRUE)
+# 
+# tidyUSDA::plotUSDA(df = beef_cattle_operations)
+# 
+# mydata = beef_cattle_operations[,c("NAME", "Value", "ALAND")]
+# 
+# mydata$ALAND <- as.numeric(mydata$ALAND)
+# mydata$modified_value <- mydata$Value / mydata$ALAND
+# tidyUSDA::plotUSDA(df = mydata, fill_by = 'modified_value')
+
+```
+
+## 2.1. Data Sources
+
+
+## 2.2. Data Preparation
+
+*Production*
+
+* Cattle
 ```{r}
 cattleinv_data =  read_csv("data/cattle inventory.csv")
 cattleinv_data= as.data.table(cattleinv_data)
@@ -63,92 +110,20 @@ setnames(cattleinv_data,  "TOTAL, NOT SPECIFIED in HEAD", "number")
 
 ```
 
-```{r}
-beef_cattle = cattleinv_data[COMMODITY=="CATTLE, COWS, BEEF"]
-beef_cattle = beef_cattle[, c("COMMODITY"):= NULL]
-beef_cattle_states = beef_cattle[2:51]
-beef_cattle_states[, number:= number/1000]
 
-setorderv(beef_cattle_states, cols="number",  order=-1L, na.last=TRUE)
-
-head(beef_cattle_states,10)
-
-total = beef_cattle[1]
-total[, number:= number/1000]
-total
-```
-
-
-
-```{r}
-plot = 
-  plot_usmap(data = beef_cattle_states, values = "number", labels = TRUE,  color = "black")  + 
-  scale_fill_continuous(name = "Beef Cattle Inventory",  low = "lightblue", high = "blue", label = scales::comma) + 
-  labs(title = "U.S. Beef Cattle Inventory, by State-January 1, 2021-1000 heads") +
-  theme(legend.position = "right")
-
-# Set label font size
-plot$layers[[2]]$aes_params$size <- 1.5
-print(plot)
-
-```
-
-```{r}
-
-```
-
-* beef production and consumption
+* Beef
 ```{r}
 beef_prod_data = read_excel("data/yearly beef production.xlsx")
 beef_prod_data = as.data.table(beef_prod_data)
-
-str(beef_prod_data)
+#setnames(beef_prod_data,  "casrcass_weight", "per_capita_")
+#str(beef_prod_data)
 ```
 
-```{r}
-ggplot(beef_prod_data, aes(x=year, y=production )) + 
-  geom_line()+
-  labs(title="U.S. Beef Production", 
-       caption="Source: USDA", 
-       y="1000 lbs", 
-       color=NULL) +  # title and caption
-  scale_color_manual(labels = c("psavert", "uempmed"), 
-                     values = c("psavert"="#00ba38", "uempmed"="#f8766d")) +  # line color
-  theme(axis.text.x = element_text(angle = 90, vjust=0.5, size = 8),  # rotate x axis text
-        panel.grid.minor = element_blank())  # turn off minor grid
-```
-```{r}
-ggplot(beef_prod_data, aes(x=year, y=population/1000 )) + 
-  geom_line()+
-  labs(title="U.S. Population", 
-       caption="Source: USDA", 
-       y="1000 people", 
-       color=NULL) +  # title and caption
- scale_color_manual(labels = c("psavert", "uempmed"), 
-                     values = c("psavert"="#00ba38", "uempmed"="#f8766d")) +  # line color
-  theme(axis.text.x = element_text(angle = 90, vjust=0.5, size = 8),  # rotate x axis text
-        panel.grid.minor = element_blank())  # turn off minor grid
-```
+*Trade* 
 
-```{r}
-ggplot(beef_prod_data, aes(x=year, y=carcass_weight )) + 
-  geom_line()+
-  labs(title="Per capita Consumption", 
-       caption="Source: USDA", 
-       y="lbs.", 
-       color=NULL) +  # title and caption
- scale_color_manual(labels = c("psavert", "uempmed"), 
-                     values = c("psavert"="#00ba38", "uempmed"="#f8766d")) +  # line color
-  theme(axis.text.x = element_text(angle = 90, vjust=0.5, size = 8),  # rotate x axis text
-        panel.grid.minor = element_blank())  # turn off minor grid
-```
+* Cattle
 
-
-trade
-
-* cattle
-
-* x
+* Export 
 ```{r}
 export_data_cattle = read_excel("data/cattle_trade.xlsx", sheet = "export")
 
@@ -159,25 +134,7 @@ export_data_cattle = as.data.table(export_data_cattle, key="country")
 export_data_cattle[, export:=export/1000]
 ```
 
-```{r}
-cattle_exports = export_data_cattle[year =="2021"]
-setorderv(cattle_exports, cols="export",  order=-1L, na.last=TRUE)
-head(cattle_exports,10)
-```
-
-```{r}
-data= head(cattle_exports,10)[2:10]
-data[, export:=export*100/509.576]
-ggplot(data, aes(x="", y=export, fill=country)) +
-  labs(title="Cattle Exports-Country Share", 
-       caption="Source: USDA", 
-       y="%.", 
-       color=NULL) +  # title and caption
-  geom_bar(stat="identity", width=1) +
-  coord_polar("y", start=0)
-```
-
-* m
+* Import
 ```{r}
 import_data_cattle = read_excel("data/cattle_trade.xlsx", sheet = "import")
 
@@ -189,39 +146,9 @@ import_data_cattle = as.data.table(import_data_cattle, key = "country")
 import_data_cattle[, import:=import/1000]
 ```
 
-```{r}
-cattle_imports = import_data_cattle[year =="2021" ]
-setorderv(cattle_imports, cols="import",  order=-1L, na.last=TRUE)
-head(cattle_imports,10)
-```
+* Beef
 
-```{r}
-data= head(cattle_imports,10)[2:10]
-data[, import:=import*100/1775.492]
-ggplot(data, aes(x="", y=import, fill=country)) +
-    labs(title="Cattle Imports-Country Share", 
-       caption="Source: USDA", 
-       y="%.", 
-       color=NULL) +  # title and caption
-  geom_bar(stat="identity", width=1) +
-  coord_polar("y", start=0)
-```
-
-* combine
-```{r}
-cattle_trade_data = merge( export_data_cattle,import_data_cattle, by = c("country", "year"), all=T)
-cattle_trade_data = cattle_trade_data[, trade_balance:= export-import] 
-cattle_trade_data = cattle_trade_data[, us_status:= ifelse(trade_balance<0, "net_importer", "net_exporter")] 
-
-total_cattle_trade = cattle_trade_data[country=="total"]
-setorder(total_cattle_trade, cols = -"year") 
-head(total_cattle_trade,5)
-
-```
-
-* beef
-
-* x
+* Export
 ```{r}
 export_data <- read_excel("data/beef_trade.xlsx", sheet = "export")
 
@@ -229,28 +156,10 @@ export_data = melt(export_data, id.vars ="country",
 variable.name = "year", value.name = "export")
 
 export_data = as.data.table(export_data, key="country")
-export_data[, export:=export/1000]
+export_data[, export := export/1000]
 ```
 
-```{r}
-beef_exports = export_data[year =="2021"]
-setorderv(beef_exports, cols="export",  order=-1L, na.last=TRUE)
-head(beef_exports,10)
-```
-
-```{r}
-data= head(beef_exports,10)[2:10]
-data[, export:=export*100/3447.0693	]
-ggplot(data, aes(x="", y=export, fill=country)) +
-    labs(title="Beef Exports-Country Share", 
-       caption="Source: USDA", 
-       y="%", 
-       color=NULL) +  # title and caption
-  geom_bar(stat="identity", width=1) +
-  coord_polar("y", start=0)
-```
-
-* m
+* Import
 ```{r}
 import_data <- read_excel("data/beef_trade.xlsx", sheet = "import")
 
@@ -261,26 +170,384 @@ import_data = as.data.table(import_data, key = "country")
 import_data[, import:=import/1000]
 ```
 
+*Prices*
+```{r}
+beef_price_data = read_excel("data/prices.xlsx")
+#head(beef_price_data, 5)
+```
+
+*Consumption*
+```{r}
+beef_consmptn_data = read_excel("data/beef_consumption.xls")
+beef_consmptn_data = as.data.table(beef_consmptn_data)
+#str(beef_consmptn_data)
+```
+
+
+# 3. Explanatory Data Analysis
+## 3.1. Production
+### 3.1.1. Cattle
+
+```{r}
+beef_cattle = cattleinv_data[COMMODITY=="CATTLE, COWS, BEEF"]
+beef_cattle = beef_cattle[, c("COMMODITY"):= NULL]
+beef_cattle_states = beef_cattle[2:51]
+beef_cattle_states[, number:= number/1000]
+
+setorderv(beef_cattle_states, cols="number",  order=-1L, na.last=TRUE)
+
+#head(beef_cattle_states,10)
+
+total = beef_cattle[1]
+total[, number:= number/1000]
+
+table_data = total
+
+knitr::kable(
+  table_data,
+  col.names = c('', '1000 Heads'),
+  align = "lccrr",
+  caption = "U.S. Beef Cattle Inventory"
+)
+
+
+table_data = setorderv(beef_cattle_states, cols="number",  order=-1L, na.last=TRUE)
+
+knitr::kable(
+  table_data[1:11],
+  col.names = c('States', '1000 Heads'),
+  align = "lccrr",
+  caption = "U.S. Beef Cattle Inventory by States"
+)
+
+```
+
+
+
+```{r}
+plot = 
+  plot_usmap(data = beef_cattle_states, values = "number", labels = TRUE,  color = "black")  + 
+  scale_fill_continuous(name = "Beef Cattle Inventory",  low = "white", high = "orange", label = scales::comma) + 
+  labs(title = "U.S. Beef Cattle Inventory, by State-January 1, 2021-1000 heads") +
+  theme(legend.position = "right")
+
+# Set label font size
+plot$layers[[2]]$aes_params$size <- 1.5
+print(plot)
+
+```
+
+### 3.1.2. Beef
+
+
+```{r}
+
+dt = 
+  beef_prod_data[, -c(3,5,7,8,9,10), with=FALSE] %>% 
+  as.data.frame(dt)  %>%
+  select(year, production) %>%
+  gather(key = "variable", value = "value", -year)
+
+#head(dt, 5)
+
+ggplot(dt, aes(x = year, y = value)) + 
+  labs(title = "U.S. Beef Production-1000 lbs") +
+  geom_line(aes(color = variable), size = 1) +
+  scale_color_manual(values = c("orange")) +
+  theme_minimal()
+
+```
+
+
+## 3.2. International Trade
+### 3.2.1. Cattle 
+
+*Export*
+
+```{r}
+cattle_exports = export_data_cattle[year =="2021"]
+setorderv(cattle_exports, cols="export",  order=-1L, na.last=TRUE)
+#head(cattle_exports,10)
+```
+
+```{r}
+data= cattle_exports[2:111]
+data= data[, c("year"):=NULL]
+
+
+data[, export:=round(export*100/509.576, digits = 1)]
+setnames(data,  "export", "export_share")
+#head(data,5)
+
+rest_total = sum(data$export[6:111], na.rm = T)  
+rest_totw <- data.frame("restoftheworld", rest_total)      
+names(rest_totw) = c("country", "export_share")
+
+data= data[1:5]
+
+
+data1 = rbind(data, rest_totw) 
+#data1
+
+
+table_data = setorderv(data1, cols="export_share",  order=-1L, na.last=TRUE)
+
+knitr::kable(
+  table_data[1:6],
+  col.names = c('Country', 'Share-%'),
+  align = "lccrr",
+  caption = "U.S. Cattle Exports by Country - % Shares"
+)
+
+data2 <- data1 %>% 
+  mutate(csum = rev(cumsum(rev(export_share))), 
+         pos = export_share/2 + lead(csum, 1),
+         pos = if_else(is.na(pos), export_share/2, pos))
+
+data2 = as.data.frame(data2)
+
+
+ggplot(data1, aes(x = "" , y = export_share, fill=fct_inorder(country))) +
+  labs(title = "U.S. Cattle Exports by Country - % Shares")+
+  geom_col(width = 1, color = 1) +
+  coord_polar(theta = "y") +
+  scale_fill_brewer(palette = "Pastel1") +
+  geom_label_repel(data = data2,
+                   aes(y = pos, label = paste0(export_share, "%")),
+                   size = 4.5, nudge_x = 1, show.legend = FALSE) +
+  guides(fill = guide_legend(title = "Country")) +
+  theme_void()
+
+```
+
+*Import*
+
+
+```{r}
+cattle_imports = import_data_cattle[year =="2021" ]
+setorderv(cattle_imports, cols="import",  order=-1L, na.last=TRUE)
+#head(cattle_imports,10)
+```
+
+```{r}
+data= cattle_imports[2:24]
+data= data[, c("year"):=NULL]
+
+
+data[, import:=round(import*100/1775.492, digits = 1)]
+setnames(data,  "import", "import_share")
+#head(data,5)
+
+rest_total = sum(data$import[3:24], na.rm = T)  
+rest_totw <- data.frame("restoftheworld", rest_total)      
+names(rest_totw) = c("country", "import_share")
+
+data= data[1:2]
+
+
+data1 = rbind(data, rest_totw) 
+#data1
+
+table_data = setorderv(data1, cols="import_share",  order=-1L, na.last=TRUE)
+
+
+knitr::kable(
+  table_data[1:3],
+  col.names = c('Country', 'Share-%'),
+  align = "lccrr",
+  caption = "U.S. Cattle Imports by Country - % Shares"
+)
+
+
+data2 <- data1 %>% 
+  mutate(csum = rev(cumsum(rev(import_share))), 
+         pos = import_share/2 + lead(csum, 1),
+         pos = if_else(is.na(pos), import_share/2, pos))
+
+data2 = as.data.frame(data2)
+
+ggplot(data1, aes(x = "" , y = import_share, fill=fct_inorder(country))) +
+  labs(title = "U.S. Cattle Imports by Country - % Shares")+
+  geom_col(width = 1, color = 1) +
+  coord_polar(theta = "y") +
+  scale_fill_brewer(palette = "Pastel1") +
+  geom_label_repel(data = data2,
+                   aes(y = pos, label = paste0(import_share, "%")),
+                   size = 4.5, nudge_x = 1, show.legend = FALSE) +
+  guides(fill = guide_legend(title = "Country")) +
+  theme_void()
+
+```
+
+
+*Trade Balance*
+
+```{r}
+cattle_trade_data = merge( export_data_cattle,import_data_cattle, by = c("country", "year"), all=T)
+cattle_trade_data = cattle_trade_data[, trade_balance:= export-import] 
+cattle_trade_data = cattle_trade_data[, us_status:= ifelse(trade_balance<0, " net_importer", " net_exporter")] 
+
+total_cattle_trade = cattle_trade_data[country=="total"]
+setorder(total_cattle_trade, cols = -"year") 
+#head(total_cattle_trade,5)
+
+table_data = total_cattle_trade[, country:= NULL]
+table_data[, export:=round(export, digits = 0)]
+table_data[, import:=round(import, digits = 0)]
+table_data[, trade_balance:=round(trade_balance, digits = 0)]
+
+table_data = setorderv(total_cattle_trade, cols="year",  order=-1L, na.last=TRUE)
+
+knitr::kable(
+  table_data[1:10],
+  col.names = c('Year', 'Export', 'Import', 'Balance', 'Position'),
+  align = "lccrr",
+  caption = "U.S. Cattle Trade"
+)
+```
+
+### 3.2.2. Beef 
+
+```{r}
+dt = 
+  beef_prod_data[, -c(3,5,7,8,9,10), with=FALSE] %>% 
+  as.data.frame(dt)  %>%
+  select(year, import, export) %>%
+  gather(key = "variable", value = "value", -year)
+
+#head(dt, 5)
+
+ggplot(dt, aes(x = year, y = value)) + 
+  labs(title = "U.S. Beef Trade-1000 lbs") +
+  geom_line(aes(color = variable), size = 1) +
+  scale_color_manual(values = c("orange", "lightblue")) +
+  theme_minimal()
+```
+
+*Export*
+```{r}
+beef_exports = export_data[year =="2021"]
+setorderv(beef_exports, cols="export",  order=-1L, na.last=TRUE)
+#head(beef_exports,10)
+```
+
+```{r}
+data= beef_exports[2:217]
+data= data[, c("year"):=NULL]
+
+
+data[, export:=round(export*100/3447.0693	, digits = 1)]
+setnames(data,  "export", "export_share")
+#head(data,10)
+
+#rest_total1 = sum(data$export[1:10], na.rm = T) 
+#rest_total1
+
+rest_total = sum(data$export[11:217], na.rm = T)
+#rest_total
+
+rest_totw <- data.frame("restoftheworld", rest_total)      
+names(rest_totw) = c("country", "export_share")
+
+data= data[1:10]
+
+
+data1 = rbind(data, rest_totw) 
+#data1
+
+
+table_data = setorderv(data1, cols="export_share",  order=-1L, na.last=TRUE)
+
+knitr::kable(
+  table_data[1:11],
+  col.names = c('Country', 'Share-%'),
+  align = "lccrr",
+  caption = "U.S. Beef Exports by Country - % Shares"
+)
+
+data2 <- data1 %>% 
+  mutate(csum = rev(cumsum(rev(export_share))), 
+         pos = export_share/2 + lead(csum, 1),
+         pos = if_else(is.na(pos), export_share/2, pos))
+
+data2 = as.data.frame(data2)
+
+ggplot(data1, aes(x = "" , y = export_share, fill=fct_inorder(country))) +
+  labs(title = "U.S. Beef Exports Country Shares - %")+
+  geom_col(width = 1, color = 1) +
+  coord_polar(theta = "y") +
+  scale_fill_brewer(palette = "Pastel1") +
+  geom_label_repel(data = data2,
+                   aes(y = pos, label = paste0(export_share, "%")),
+                   size = 4.5, nudge_x = 1, show.legend = FALSE) +
+  guides(fill = guide_legend(title = "Country")) +
+  theme_void()
+```
+
+*Import*
+
 
 ```{r}
 beef_imports = import_data[year =="2021"]
 setorderv(beef_imports, cols="import",  order=-1L, na.last=TRUE)
-head(beef_imports,10)
+#head(beef_imports,10)
 ```
 
 ```{r}
-data= head(beef_imports,10)[2:10]
-data[, import:=import*100/3447.0693	]
-ggplot(data, aes(x="", y=import, fill=country)) +
-    labs(title="Beef Imports-Country Share", 
-       caption="Source: USDA", 
-       y="%", 
-       color=NULL) +  # title and caption
-  geom_bar(stat="identity", width=1) +
-  coord_polar("y", start=0)
+data= beef_imports[2:94]
+data= data[, c("year"):=NULL]
+
+
+data[, import:=round(import*100/3347.51555		, digits = 1)]
+setnames(data,  "import", "import_share")
+#head(data,10)
+
+#rest_total1 = sum(data$import[1:10], na.rm = T) 
+#rest_total1
+
+rest_total = sum(data$import[11:217], na.rm = T)
+#rest_total
+
+rest_totw <- data.frame("restoftheworld", rest_total)      
+names(rest_totw) = c("country", "import_share")
+
+data= data[1:10]
+
+
+data1 = rbind(data, rest_totw) 
+#data1
+
+table_data = setorderv(data1, cols="import_share",  order=-1L, na.last=TRUE)
+
+
+knitr::kable(
+  table_data[1:11],
+  col.names = c('Country', 'Share-%'),
+  align = "lccrr",
+  caption = "U.S. Beef Imports by Country - % Shares"
+)
+
+data2 <- data1 %>% 
+  mutate(csum = rev(cumsum(rev(import_share))), 
+         pos = import_share/2 + lead(csum, 1),
+         pos = if_else(is.na(pos), import_share/2, pos))
+
+data2 = as.data.frame(data2)
+
+ggplot(data1, aes(x = "" , y = import_share, fill=fct_inorder(country))) +
+  labs(title = "U.S. Cattle Imports Country Shares - %")+
+  geom_col(width = 1, color = 1) +
+  coord_polar(theta = "y") +
+  scale_fill_brewer(palette = "Pastel1") +
+  geom_label_repel(data = data2,
+                   aes(y = pos, label = paste0(import_share, "%")),
+                   size = 4.5, nudge_x = 1, show.legend = FALSE) +
+  guides(fill = guide_legend(title = "Country")) +
+  theme_void()
 ```
 
-* combined
+
+*Trade Balance*
 ```{r}
 beef_trade_data = merge( export_data,import_data, by = c("country", "year"), all=T)
 beef_trade_data = beef_trade_data[, trade_balance:= export-import] 
@@ -288,34 +555,133 @@ beef_trade_data = beef_trade_data[, us_status:= ifelse(trade_balance<0, "net_imp
 
 beef_total_trade = beef_trade_data[country=="total" ]
 setorder(beef_total_trade, cols = -"year") 
-head(total_trade,5)
+#head(beef_total_trade,5)
+
+table_data = beef_total_trade[, country:= NULL]
+table_data[, export:=round(export, digits = 0)]
+table_data[, import:=round(import, digits = 0)]
+table_data[, trade_balance:=round(trade_balance, digits = 0)]
+
+knitr::kable(
+  table_data[1:10],
+  col.names = c('Year', 'Export', 'Import', 'Balance', 'Position'),
+  align = "lccrr",
+  caption = "U.S. Beef Trade"
+)
 
 ```
 
+## 3.3. Prices
 
-
-
-
-market
-
-
-* prices
 ```{r}
-beef_price_data = read_excel("data/prices.xlsx")
+table_data = as.data.table(beef_price_data[, -c(5:7)])
+table_data[, farm:=round(farm, digits = 0)]
+table_data[, wholesale:=round(wholesale, digits = 0)]
+table_data[, retail:=round(retail, digits = 0)]
+
+knitr::kable(
+  table_data[613:624],
+  col.names = c('Date', 'Farm', 'Wholesale', 'Retail'),
+  align = "lccrr",
+  caption = "U.S. Beef Prices- Cent per pound"
+)
+
+
+
+dt = 
+  beef_price_data[, -c(5:7), with=FALSE] %>% 
+  as.data.frame(dt)  %>%
+  select(date, farm, wholesale, retail) %>%
+  gather(key = "price", value = "value", -date)
+
+#head(dt, 5)
+
+
+
+
+ggplot(dt, aes(x = date, y = value)) + 
+  labs(title = "U.S. Beef Prices-cents per pound") +
+  geom_line(aes(color = price), size = 1) +
+  scale_color_manual(values = c("orange", "lightblue", "lightgreen")) +
+  theme_minimal()
+
+```
+
+```{r}
+
+dt = 
+  beef_price_data[, -c(2:4), with=FALSE] %>% 
+  as.data.frame(dt)  %>%
+  select(date, `farm-retail`, `farm-wholesale`, `wholesale-retail`) %>%
+  gather(key = "spread", value = "value", -date)
+
+#head(dt, 5)
+
+ggplot(dt, aes(x = date, y = value)) + 
+  labs(title = "U.S. Beef Price Spreads") +
+  geom_line(aes(color = spread), size = 1) +
+  scale_color_manual(values = c("orange", "lightblue", "lightgreen")) +
+  theme_minimal()
+```
+
+## 3.4. Consumption
+
+
+```{r}
+table_data = as.data.table(beef_prod_data[, -c(2:8,10)])
+table_data[, population:=population/1000]
+table_data[, population:=round(population, digits = 0)]
+
+knitr::kable(
+  table_data[41:52],
+  col.names = c('Year', 'Population'),
+  align = "lccrr",
+  caption = "U.S. Population- Million"
+)
+
+dt = 
+  beef_prod_data[, -c(3,5,7,8,10), with=FALSE] %>% 
+  as.data.frame(dt)  %>%
+  select(year, population) %>%
+  gather(key = "variable", value = "value", -year)
+
+head(dt, 5)
+
+ggplot(dt, aes(x = year, y = value)) + 
+  labs(title = "U.S. Population-1000 people") +
+  geom_line(aes(color = variable), size = 1) +
+  scale_color_manual(values = c("orange")) +
+  theme_minimal()
 
 ```
 
 
-## 2.1. Data Sources
-## 2.2. Data Preparation
+```{r}
+table_data = as.data.table(beef_consmptn_data)
+table_data[, beef:=round(beef, digits = 0)]
+table_data[, pork:=round(pork, digits = 0)]
+table_data[, chicken:=round(chicken, digits = 0)]
 
-# 3. Explanatory Data Analysis
-## 3.1. Federal Level
+knitr::kable(
+  table_data[92:111],
+  col.names = c('Year', 'Beef', 'Pork', 'Chicken'),
+  align = "lccrr",
+  caption = "U.S. Meat Consumption- Pounds"
+)
 
-## 3.2. State Level
+dt = 
+  as.data.frame(beef_consmptn_data)  %>%
+  select(year, beef, pork, chicken) %>%
+  gather(key = "per capita consumption", value = "value", -year)
 
-## 3.3. Kentucky
+#head(dt, 5)
 
+ggplot(dt, aes(x = year, y = value)) + 
+  labs(title = "U.S. Meat Consumption-pounds") +
+  geom_line(aes(color = `per capita consumption`), size = 1) +
+  scale_color_manual(values = c("orange", "lightblue", "lightgreen")) +
+  theme_minimal()
+```
 
 # Summary
 
