@@ -608,6 +608,17 @@ ggplot(dt, aes(x = date, y = value)) +
 ```
 
 ```{r}
+table_data = as.data.table(beef_price_data[, -c(2:4)])
+table_data[, `farm-retail`:=round(`farm-retail`, digits = 0)]
+table_data[, `farm-wholesale`:=round(`farm-wholesale`, digits = 0)]
+table_data[, `wholesale-retail`:=round(`wholesale-retail`, digits = 0)]
+
+knitr::kable(
+  table_data[613:624],
+  col.names = c('Date', 'Farm-Retail', 'Farm-Wholesale', 'Wholesale-Retail'),
+  align = "lccrr",
+  caption = "U.S. Beef Prices- Cent per pound"
+)
 
 dt = 
   beef_price_data[, -c(2:4), with=FALSE] %>% 
