@@ -55,44 +55,6 @@ library(tidyUSDA)
 # 2. Data
 
 
-
-
-
-
-
-
-* tidyUSDA Package
-
-```{r}
-# key = 'D16D4292-FA76-3FA5-9D88-EE8C5F5574CC'
-# tidyUSDA::allCategory %>% head()
-# tidyUSDA::allGeogLevel %>% head()
-# beef_cattle_operations = tidyUSDA::getQuickstat(
-#   sector=NULL,
-#   group=NULL,
-#   commodity=NULL,
-#   category=NULL,
-#   domain='TOTAL',
-#   county=NULL,
-#   key = key,
-#   program = 'CENSUS',
-#   data_item = 'CATTLE, COWS, BEEF - OPERATIONS WITH INVENTORY',
-#   geographic_level = 'STATE',
-#   year = '2017',
-#   state = NULL,
-#   geometry = TRUE,
-#   lower48 = TRUE)
-# 
-# tidyUSDA::plotUSDA(df = beef_cattle_operations)
-# 
-# mydata = beef_cattle_operations[,c("NAME", "Value", "ALAND")]
-# 
-# mydata$ALAND <- as.numeric(mydata$ALAND)
-# mydata$modified_value <- mydata$Value / mydata$ALAND
-# tidyUSDA::plotUSDA(df = mydata, fill_by = 'modified_value')
-
-```
-
 ## 2.1. Data Sources
 
 
@@ -102,12 +64,11 @@ library(tidyUSDA)
 
 * Cattle
 ```{r}
-cattleinv_data =  read_csv("data/cattle inventory.csv")
-cattleinv_data= as.data.table(cattleinv_data)
-cattleinv_data = cattleinv_data[, c("YEAR","REFERENCE PERIOD", "STATE ANSI"):= NULL]
-setnames(cattleinv_data,  "LOCATION","state")
-setnames(cattleinv_data,  "TOTAL, NOT SPECIFIED in HEAD", "number")
+cattleinv_data_yearly =  read_csv("data/beef_inv_yearly.csv")
+cattleinv_data_yearly= as.data.table(cattleinv_data_yearly)
 
+cattleinv_data_2021 =  read_csv("data/2021_beef_cattle_inv_state.csv")
+cattleinv_data_2021= as.data.table(cattleinv_data_2021)
 ```
 
 
@@ -189,46 +150,66 @@ beef_consmptn_data = as.data.table(beef_consmptn_data)
 ### 3.1.1. Cattle
 
 ```{r}
-beef_cattle = cattleinv_data[COMMODITY=="CATTLE, COWS, BEEF"]
-beef_cattle = beef_cattle[, c("COMMODITY"):= NULL]
-beef_cattle_states = beef_cattle[2:51]
-beef_cattle_states[, number:= number/1000]
-
-setorderv(beef_cattle_states, cols="number",  order=-1L, na.last=TRUE)
-
-#head(beef_cattle_states,10)
-
-total = beef_cattle[1]
-total[, number:= number/1000]
-
-table_data = total
+table_data = cattleinv_data_yearly
+table_data[, Value:=Value/1000]
+table_data = setorderv(table_data, cols="Year",  order=1L, na.last=TRUE)
+table_data[, Value:=round(Value, digits = 0)]
 
 knitr::kable(
-  table_data,
-  col.names = c('', '1000 Heads'),
+  table_data[82:103],
+  col.names = c('Year', 'Production'),
   align = "lccrr",
-  caption = "U.S. Beef Cattle Inventory"
+  caption = "U.S. Beef Cattle Inventory,January 1-1000 heads"
 )
 
+dt = 
+  table_data %>% 
+  as.data.frame(dt)  %>%
+  select(Year, Value) %>%
+  gather(key = "variable", value = "Inventory", -Year)
 
-table_data = setorderv(beef_cattle_states, cols="number",  order=-1L, na.last=TRUE)
+#head(dt, 5)
 
-knitr::kable(
-  table_data[1:11],
-  col.names = c('States', '1000 Heads'),
-  align = "lccrr",
-  caption = "U.S. Beef Cattle Inventory by States"
-)
-
+ggplot(dt, aes(x = Year, y = Inventory)) + 
+  labs(title = "U.S. Beef Cattle Inventory,January 1-1000 heads") +
+  geom_line(aes(color = variable), size = 1) +
+  scale_color_manual(values = c("orange")) +
+  theme_minimal()
 ```
 
+```{r}
+table_data = cattleinv_data_yearly
+table_data = setorderv(table_data, cols="Year",  order=1L, na.last=TRUE)
+table_data =table_data %>% mutate(pct_change = (Value/lag(Value) - 1) * 100)
+table_data = as.data.frame(table_data)
+table_data = table_data[83:103,]
 
+#head(dt, 5)
+
+ggplot(table_data, aes(x = Year, y = `pct_change`)) + 
+  labs(title = "U.S. Beef Cattle Inventory,January 1-%-change") +
+  geom_line(color="orange") +
+  theme_minimal()
+```
 
 ```{r}
+table_data = cattleinv_data_2021
+setnames(cattleinv_data_2021,  "State","state")
+table_data[, Value:=round(Value, digits = 0)]
+table_data[, Value:=Value/1000]
+table_data = setorderv(table_data, cols="Value",  order=-1L, na.last=TRUE)
+
+knitr::kable(
+  table_data[1:10],
+  col.names = c('Year', '1000 Heads'),
+  align = "lccrr",
+  caption = "U.S. Beef Cattle Inventory, by State, 2021-1000 heads"
+)
+
 plot = 
-  plot_usmap(data = beef_cattle_states, values = "number", labels = TRUE,  color = "black")  + 
+  plot_usmap(data = cattleinv_data_2021, values = "Value", labels = TRUE,  color = "black")  + 
   scale_fill_continuous(name = "Beef Cattle Inventory",  low = "white", high = "orange", label = scales::comma) + 
-  labs(title = "U.S. Beef Cattle Inventory, by State-January 1, 2021-1000 heads") +
+  labs(title = "U.S. Beef Cattle Inventory, by State,2021-1000 heads") +
   theme(legend.position = "right")
 
 # Set label font size
@@ -237,10 +218,21 @@ print(plot)
 
 ```
 
+
 ### 3.1.2. Beef
 
 
 ```{r}
+table_data =  beef_prod_data[, -c(3:10), with=FALSE]
+table_data[, production:=round(production, digits = 0)]
+table_data = setorderv(table_data, cols="year",  order=1L, na.last=TRUE)
+
+knitr::kable(
+  table_data[31:52],
+  col.names = c('Year', 'Production'),
+  align = "lccrr",
+  caption = "U.S. Beef Production - 1000 lbs"
+)
 
 dt = 
   beef_prod_data[, -c(3,5,7,8,9,10), with=FALSE] %>% 
@@ -258,6 +250,20 @@ ggplot(dt, aes(x = year, y = value)) +
 
 ```
 
+```{r}
+table_data =  beef_prod_data[, -c(3:10), with=FALSE]
+table_data =table_data %>% mutate(pct_change = (production/lag(production) - 1) * 100)
+table_data = as.data.frame(table_data)
+table_data = table_data[31:52,]
+
+
+#head(dt, 5)
+
+ggplot(table_data, aes(x = year, y = `pct_change`)) + 
+  labs(title = "U.S. Beef Production-%-change") +
+  geom_line(color="orange") +
+  theme_minimal()
+```
 
 ## 3.2. International Trade
 ### 3.2.1. Cattle 
@@ -396,10 +402,10 @@ table_data[, export:=round(export, digits = 0)]
 table_data[, import:=round(import, digits = 0)]
 table_data[, trade_balance:=round(trade_balance, digits = 0)]
 
-table_data = setorderv(total_cattle_trade, cols="year",  order=-1L, na.last=TRUE)
+table_data = setorderv(total_cattle_trade, cols="year",  order=1L, na.last=TRUE)
 
 knitr::kable(
-  table_data[1:10],
+  table_data[12:33],
   col.names = c('Year', 'Export', 'Import', 'Balance', 'Position'),
   align = "lccrr",
   caption = "U.S. Cattle Trade"
@@ -409,6 +415,7 @@ knitr::kable(
 ### 3.2.2. Beef 
 
 ```{r}
+
 dt = 
   beef_prod_data[, -c(3,5,7,8,9,10), with=FALSE] %>% 
   as.data.frame(dt)  %>%
@@ -554,7 +561,7 @@ beef_trade_data = beef_trade_data[, trade_balance:= export-import]
 beef_trade_data = beef_trade_data[, us_status:= ifelse(trade_balance<0, "net_importer", "net_exporter")] 
 
 beef_total_trade = beef_trade_data[country=="total" ]
-setorder(beef_total_trade, cols = -"year") 
+setorder(beef_total_trade, cols = "year") 
 #head(beef_total_trade,5)
 
 table_data = beef_total_trade[, country:= NULL]
@@ -563,7 +570,7 @@ table_data[, import:=round(import, digits = 0)]
 table_data[, trade_balance:=round(trade_balance, digits = 0)]
 
 knitr::kable(
-  table_data[1:10],
+  table_data[12:33],
   col.names = c('Year', 'Export', 'Import', 'Balance', 'Position'),
   align = "lccrr",
   caption = "U.S. Beef Trade"
@@ -586,8 +593,6 @@ knitr::kable(
   caption = "U.S. Beef Prices- Cent per pound"
 )
 
-
-
 dt = 
   beef_price_data[, -c(5:7), with=FALSE] %>% 
   as.data.frame(dt)  %>%
@@ -595,10 +600,6 @@ dt =
   gather(key = "price", value = "value", -date)
 
 #head(dt, 5)
-
-
-
-
 ggplot(dt, aes(x = date, y = value)) + 
   labs(title = "U.S. Beef Prices-cents per pound") +
   geom_line(aes(color = price), size = 1) +
@@ -617,7 +618,7 @@ knitr::kable(
   table_data[613:624],
   col.names = c('Date', 'Farm-Retail', 'Farm-Wholesale', 'Wholesale-Retail'),
   align = "lccrr",
-  caption = "U.S. Beef Prices- Cent per pound"
+  caption = "U.S. Beef Price Spreads- Cent per pound"
 )
 
 dt = 
@@ -644,7 +645,7 @@ table_data[, population:=population/1000]
 table_data[, population:=round(population, digits = 0)]
 
 knitr::kable(
-  table_data[41:52],
+  table_data[31:52],
   col.names = c('Year', 'Population'),
   align = "lccrr",
   caption = "U.S. Population- Million"
@@ -656,7 +657,7 @@ dt =
   select(year, population) %>%
   gather(key = "variable", value = "value", -year)
 
-head(dt, 5)
+#head(dt, 5)
 
 ggplot(dt, aes(x = year, y = value)) + 
   labs(title = "U.S. Population-1000 people") +
@@ -696,6 +697,37 @@ ggplot(dt, aes(x = year, y = value)) +
 
 # Summary
 
+* tidyUSDA Package
+
+```{r}
+# key = 'D16D4292-FA76-3FA5-9D88-EE8C5F5574CC'
+# tidyUSDA::allCategory %>% head()
+# tidyUSDA::allGeogLevel %>% head()
+# beef_cattle_operations = tidyUSDA::getQuickstat(
+#   sector=NULL,
+#   group=NULL,
+#   commodity=NULL,
+#   category=NULL,
+#   domain='TOTAL',
+#   county=NULL,
+#   key = key,
+#   program = 'CENSUS',
+#   data_item = 'CATTLE, COWS, BEEF - OPERATIONS WITH INVENTORY',
+#   geographic_level = 'STATE',
+#   year = '2017',
+#   state = NULL,
+#   geometry = TRUE,
+#   lower48 = TRUE)
+# 
+# tidyUSDA::plotUSDA(df = beef_cattle_operations)
+# 
+# mydata = beef_cattle_operations[,c("NAME", "Value", "ALAND")]
+# 
+# mydata$ALAND <- as.numeric(mydata$ALAND)
+# mydata$modified_value <- mydata$Value / mydata$ALAND
+# tidyUSDA::plotUSDA(df = mydata, fill_by = 'modified_value')
+
+```
 # References
 
 
