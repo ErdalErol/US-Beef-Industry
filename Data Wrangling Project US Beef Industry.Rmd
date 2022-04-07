@@ -37,6 +37,7 @@ library(tidyfast)
 library(dtplyr)
 library(readxl)
 library(ggrepel)
+library(DT)
 
 #mapping
 library(cartography) 
@@ -65,10 +66,8 @@ library(tidyUSDA)
 * Cattle
 ```{r}
 cattleinv_data_yearly =  read_csv("data/beef_inv_yearly.csv")
-cattleinv_data_yearly= as.data.table(cattleinv_data_yearly)
 
 cattleinv_data_2021 =  read_csv("data/2021_beef_cattle_inv_state.csv")
-cattleinv_data_2021= as.data.table(cattleinv_data_2021)
 ```
 
 
@@ -150,17 +149,16 @@ beef_consmptn_data = as.data.table(beef_consmptn_data)
 ### 3.1.1. Cattle
 
 ```{r}
-table_data = cattleinv_data_yearly
-table_data[, Value:=Value/1000]
-table_data = setorderv(table_data, cols="Year",  order=1L, na.last=TRUE)
-table_data[, Value:=round(Value, digits = 0)]
-
-knitr::kable(
-  table_data[82:103],
-  col.names = c('Year', 'Production'),
-  align = "lccrr",
-  caption = "U.S. Beef Cattle Inventory,January 1-1000 heads"
-)
+table_data = as.data.table(cattleinv_data_yearly)
+table_data %>%
+  .[, Value:=Value/1000]%>%
+  .[, Value:=round(Value, digits = 0)] %>%
+  .[, pct_change := (Value/lead(Value) - 1)]%>%
+  datatable(table_data,caption = htmltools::tags$caption(
+    style = 'caption-side: top; text-align: center;', htmltools::em('Table 1: U.S. Beef Cattle Inventory.')
+  ), colnames = c('Year', '# of Heads-1000', 'Change'))%>%
+  formatCurrency('Value',currency = "", interval = 3, mark = ",")%>%
+  formatPercentage('pct_change', 2)
 
 dt = 
   table_data %>% 
@@ -168,44 +166,41 @@ dt =
   select(Year, Value) %>%
   gather(key = "variable", value = "Inventory", -Year)
 
-#head(dt, 5)
-
 ggplot(dt, aes(x = Year, y = Inventory)) + 
-  labs(title = "U.S. Beef Cattle Inventory,January 1-1000 heads") +
+  labs(title = "U.S. Beef Cattle Inventory-1000 heads") +
   geom_line(aes(color = variable), size = 1) +
   scale_color_manual(values = c("orange")) +
   theme_minimal()
-```
 
-```{r}
-table_data = cattleinv_data_yearly
-table_data = setorderv(table_data, cols="Year",  order=1L, na.last=TRUE)
-table_data =table_data %>% mutate(pct_change = (Value/lag(Value) - 1) * 100)
-table_data = as.data.frame(table_data)
-table_data = table_data[83:103,]
 
-#head(dt, 5)
+dt = 
+  table_data %>% 
+  as.data.frame(dt)  %>%
+  select(Year, pct_change) %>%
+  gather(key = "variable", value = "Change", -Year)
 
 ggplot(table_data, aes(x = Year, y = `pct_change`)) + 
-  labs(title = "U.S. Beef Cattle Inventory,January 1-%-change") +
+  labs(title = "U.S. Beef Cattle Inventory-% change") +
   geom_line(color="orange") +
   theme_minimal()
 ```
 
+
 ```{r}
-table_data = cattleinv_data_2021
-setnames(cattleinv_data_2021,  "State","state")
-table_data[, Value:=round(Value, digits = 0)]
-table_data[, Value:=Value/1000]
-table_data = setorderv(table_data, cols="Value",  order=-1L, na.last=TRUE)
+cattleinv_data_2021 =  read_csv("data/2021_beef_cattle_inv_state.csv")
 
-knitr::kable(
-  table_data[1:10],
-  col.names = c('Year', '1000 Heads'),
-  align = "lccrr",
-  caption = "U.S. Beef Cattle Inventory, by State, 2021-1000 heads"
-)
+table_data = as.data.table(cattleinv_data_2021) %>% arrange(-Value)
 
+table_data %>% as.data.table(cattleinv_data_2021)%>%
+  .[, Value:=Value/1000]%>%
+  .[, Value:=round(Value, digits = 0)] %>%
+  datatable(table_data,caption = htmltools::tags$caption(
+    style = 'caption-side: top; text-align: center;', htmltools::em('Table 2: U.S. Beef Cattle Inventory by State - 2021.')
+  ), colnames = c('State', '# of Heads-1000'))%>%
+  formatCurrency('Value',currency = "", interval = 3, mark = ",")
+
+
+setnames(cattleinv_data_2021,"State","state")
 plot = 
   plot_usmap(data = cattleinv_data_2021, values = "Value", labels = TRUE,  color = "black")  + 
   scale_fill_continuous(name = "Beef Cattle Inventory",  low = "white", high = "orange", label = scales::comma) + 
