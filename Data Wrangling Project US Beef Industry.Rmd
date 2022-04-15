@@ -13,7 +13,7 @@ output:
 <style>
 body {
 text-align: justify;
-font-size: 14pt;}
+font-size: 13pt;}
 caption {
       color: black;
       font-weight: bold;
@@ -36,8 +36,12 @@ klippy::klippy(position = c('top', 'right'))
 # Synopsis
 
 # Packages Required
-This project aims to provide a snapshot of U.S. beef industry with R data wrangling, visualization and mapping functions and techniques.
-The most common functions in  *tidyverse*, *data.table*, *ggplot2*, and *usmap* are employed. The package *DT* is used to provide tables for R markdown output. 
+
+This project aims to provide facts and figures of U.S. beef industry with R data wrangling, visualization and mapping functions and techniques.
+
+* The most common functions in  ***tidyverse***, ***data.table***, ***ggplot2***, and ***usmap*** packages are employed. 
+* The packages ***knitr*** and ***DT*** are used to provide customized plots, images and tables for R markdown output. 
+* Animated plots and maps are produced with the packages ***gganimate***, ***gifski*** and ***png***. 
 
 ```{r packages}
 #install.packages("...")
@@ -51,6 +55,7 @@ library(ggplot2)
 library(ggrepel)
 library(cowplot)
 #R interface/JavaScript-DataTables
+library(knitr)
 library(DT)
 #load excel files
 library(readxl)
@@ -85,17 +90,17 @@ plot_theme = theme(
 
 United States is the largest producer and consumer of beef in the world with 20% of the global beef production. The main stages of beef-cattle production process in U.S. are cow-calf operations, stocker/backgrounding operations, feedlots, meat packers and processors, and retailers. The production process begins with the cow-calf farms where cows and calves are raised. The next stage of production occurs at stocker/backgrounding operations where calves are placed on grass or other type of roughage. Feedlots are the final chain in the cattle production and they feed cattle with different rations of grain, silage, and/or protein supplements and sell to beef packers and processors where beef and beef by-products are produced and sold to retailers. The economic size of beef-cattle industry including direct and indirect economic contributions during on-farm and post-farm activities is estimated as $167 billion in 2016 [<a href="https://www.mdpi.com/2071-1050/14/8/4391/htm" target="_blank">1</a>]. 
 
-This project presents a macro picture of the industry with 4 main variables: production, international trade, price, and consumption. Production, international trade, and price sections include both cattle and beef sectors' data. Consumption figures are per capita values and beef is compared with pork and chicken per capita consumption.
+This project presents facts and figures of the industry with 4 main variables: production, international trade, price, and consumption. Production, international trade, and price sections include both cattle and beef sectors' data. Consumption figures are per capita values and beef is compared with pork and chicken per capita consumption.
 
 
 # 2. Data
 
 ## 2.1. Data Sources
-The data source is <a href="https://quickstats.nass.usda.gov/" target="_blank">USDA National Agricultural Statistics Service</a>.
+<a href="https://quickstats.nass.usda.gov/" target="_blank">USDA National Agricultural Statistics Service</a> database is the data source of the project, unless stated otherwise.
 
 ## 2.2. Data Import
 
-All data used in the project is provided at <a href="https://github.com/ErdalErol/US-Beef-Industry" target="_blank">github repository of the project.</a> 
+All data used in the project is provided at <a href="https://github.com/ErdalErol/US-Beef-Industry" target="_blank">github</a> repository of the project.
 
 ### 2.2.1. Production
 
@@ -103,24 +108,27 @@ All data used in the project is provided at <a href="https://github.com/ErdalEro
 
 Beef cattle inventory data is used for cattle production section. National, state and county level data is obtained for years available in the database. 
 
+* U.S. Beef Cattle Inventory: 1920-2022, January 1 Inventory Value of the Year.
 ```{r}
-cattleinv_data_yearly =  read_csv("data/beef_inv_yearly.csv")
-
-cattleinv_data_2021 =  read_csv("data/2021_beef_cattle_inv_state.csv")
+cattleinv_data_yearly =  read_csv("data/beef_cattle_inv_yearly.csv")
 ```
 
+* U.S. Beef Cattle Inventory by States: 1920-2022, January 1 Inventory Value of the Year.
 ```{r}
-cattleinv_data_state_year =  read_csv("data/beef_inv_state_year.csv")
+cattleinv_data_state_year =  read_csv("data/beef_cattle_inv_state_year.csv")
 ```
 
+* U.S. Beef Cattle Inventory by Counties: 2021, January 1.
 ```{r}
-cattleinv_data_county =  read_csv("data/beef_inv_county_2021.csv")
+cattleinv_data_county =  read_csv("data/beef_cattle_inv_county_2021.csv")
 ```
+
 
 #### Beef
 
 Beef production values are yearly production amount (million pounds). 
 
+* U.S. Beef Production: 1970-2021.
 ```{r}
 beef_prod_data = read_excel("data/yearly beef production.xlsx")
 ```
@@ -133,12 +141,14 @@ Trade data is in quantities by partner countries across years.
 
 * Export 
 
+  + U.S. Cattle Exports: 1989-2021.
 ```{r}
 export_data_cattle = read_excel("data/cattle_trade.xlsx", sheet = "export")
 ```
 
 * Import 
 
+  + U.S. Cattle Imports: 1989-2021.
 ```{r}
 import_data_cattle = read_excel("data/cattle_trade.xlsx", sheet = "import")
 ```
@@ -146,13 +156,15 @@ import_data_cattle = read_excel("data/cattle_trade.xlsx", sheet = "import")
 #### Beef
 
 * Export
-  
+
+  + U.S. Beef Exports: 1989-2021.  
 ```{r}
 export_data <- read_excel("data/beef_trade.xlsx", sheet = "export")
 ```
 
 * Import
   
+  + U.S. Beef Imports: 1989-2021.  
 ```{r}
 import_data <- read_excel("data/beef_trade.xlsx", sheet = "import")
 ```
@@ -183,8 +195,12 @@ beef_consmptn_data = read_excel("data/beef_consumption.xls")
 ```
 
 # 3. Beef Industry
+
 ## 3.1. Production
+
 ### 3.1.1. Cattle
+
+***National***
 
 This project presents a macro picture of the industry with 4 main variables: production, international trade, price, and consumption. Production, international trade, and price sections include both cattle and beef sectors' data. Consumption figures are per capita values and beef is compared with pork and chicken per capita consumption.
 
@@ -202,7 +218,7 @@ table_data %>%
   .[, Value:=Value/1000]%>%
   .[, pct_change := (Value/lead(Value) - 1)]%>%
   datatable(table_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 1: U.S. Beef Cattle Inventory')
+    style = 'caption-side: top; text-align: center;', ('Table 1: U.S. Beef Cattle Inventory: 1920-2022')
   ), colnames = c('Year', '# of Heads-1000', 'Annual Change'))%>%
   formatCurrency('Value',currency = "", interval = 3, mark = ",", digits = 0)%>%
   formatPercentage('pct_change', 1)
@@ -211,14 +227,13 @@ table_data %>%
 
 This project presents a macro picture of the industry with 4 main variables: production, international trade, price, and consumption. Production, international trade, and price sections include both cattle and beef sectors' data. Consumption figures are per capita values and beef is compared with pork and chicken per capita consumption.
 
-```{r}
-table_data[,pct_change := (Value/lead(Value) - 1)*100]
-table_data = as.data.frame(table_data)
-```
 
 This project presents a macro picture of the industry with 4 main variables: production, international trade, price, and consumption. Production, international trade, and price sections include both cattle and beef sectors' data. Consumption figures are per capita values and beef is compared with pork and chicken per capita consumption.
 
 ```{r}
+table_data[,pct_change := (Value/lead(Value) - 1)*100]
+table_data = as.data.frame(table_data)
+
 g1 = ggplot(table_data, aes(x = Year, y = Value)) + 
   labs(title = "a) U.S. Beef Cattle Inventory-1000 heads") +
   geom_line(color="orange") +
@@ -234,27 +249,53 @@ g2 = ggplot(table_data, aes(x = Year, y = `pct_change`)) +
 plot_grid(g1, g2)
 ```
 
+***State Level***
+
 ```{r}
-table_data = as.data.table(cattleinv_data_2021)
+table_data = as.data.table(cattleinv_data_state_year)
 table_data %>%
+  .[order(-Year)]%>% 
+  .[, Value:=Value/1000]%>%
+  .[, c("Year", "State","Value")] %>%
+  datatable(table_data,caption = htmltools::tags$caption(
+    style = 'caption-side: top; text-align: center;', ('Table 2: U.S. Beef Cattle Inventory by State: 1920-2022')
+  ), colnames = c('Year', 'State', 'Value-1000 heads'))%>%
+  formatCurrency('Value',currency = "", interval = 3, mark = ",", digits=0)
+
+```
+
+
+```{r}
+table_data = as.data.table(cattleinv_data_state_year)
+table_data %>%
+  .[, c("Year", "State", "Value")] %>%
   .[order(-Value)]%>% 
   .[, Value:=Value/1000]%>%
+  .[Year==2022] %>%
+  .[, c("State","Value")] %>%
   .[, state_share := (Value/sum(Value))]%>%
   datatable(table_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 2: U.S. Beef Cattle Inventory by State - 2021')
+    style = 'caption-side: top; text-align: center;', ('Table 3: U.S. Beef Cattle Inventory by State: 2022')
   ), colnames = c('State', '# of Heads-1000', 'State Share'))%>%
-  formatCurrency('Value',currency = "", interval = 3, mark = ",", digits=0)%>%
+  formatCurrency('Value',currency = "", interval = 3, mark = ",", digits = 0)%>%
   formatPercentage('state_share', 1)
 
 ```
 
 
 ```{r}
-setnames(cattleinv_data_2021,"State","state")
+state_map_data =table_data %>%
+  .[, c("Year", "State", "Value")] %>%
+  .[order(-Value)]%>% 
+  .[, Value:=Value/1000]%>%
+  .[Year==2022]
+
+setnames(state_map_data,"State","state")
+
 g1 = 
-  plot_usmap(data = cattleinv_data_2021, values = "Value", labels = TRUE,  color = "black")  + 
+  plot_usmap(data = state_map_data, values = "Value", labels = TRUE,  color = "black")  + 
   scale_fill_continuous(name = "Beef Cattle Inventory",  low = "white", high = "red", label = scales::comma) + 
-  labs(title = "U.S. Beef Cattle Inventory by State, 2021-heads") +
+  labs(title = "U.S. Beef Cattle Inventory by State, 2022-1000 heads") +
   theme(plot.title = element_text(face="bold",size=20), legend.position = "right",  
         legend.title = element_text(face="bold",size=15), legend.text = element_text(size=12))
 
@@ -267,33 +308,31 @@ g1
 <center>
 <a href="https://www.ars.usda.gov/oc/images/photos/oct17/d3858-1/" target="_blank">![Foo](images/usdaars_cattle.jpg){width=50%}<figcaption align = "bottom"></a>Photo by David Augustine</a></center>
 
+
+
 ```{r}
 table_data = as.data.table(cattleinv_data_state_year)
-table_data %>%
+animated_map_data = table_data %>%
   .[, c("Year", "State", "Value")] %>%
   .[, Value:=Value/1000]%>%
-  datatable(table_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 3: U.S. Beef Cattle Inventory by State: 1920-2022')
-  ), colnames = c('Year','State', '# of Heads-1000'))%>%
-  formatCurrency('Value',currency = "", interval = 3, mark = ",", digits = 0)
-
-```
-
-```{r}
-table_data = table_data[Year>1972]
-setnames(table_data,  "State", "state")
+  .[Year> 1972]
+  
+  
+setnames(animated_map_data,  "State", "state")
 
 # plot =
-#   plot_usmap(data = table_data, values = "Value", labels = FALSE)  +
+#   plot_usmap(data = animated_map_data, values = "Value", labels = FALSE)  +
 #   scale_fill_continuous(name = "Beef Cattle Inventory",  low = "white", high = "red", label = scales::comma) +
 #   labs(title = "Kentucky Beef Cattle Inventory by County, 2021-heads") +
-#   theme(plot.title = element_text(face="bold",size=20), legend.position = "right",  
+#   theme(plot.title = element_text(face="bold",size=20), legend.position = "right",
 #         legend.title = element_text(face="bold",size=15), legend.text = element_text(size=12))+
 #    transition_states(Year)
 # 
 # animate(plot, fps = 5)
 
 ```
+
+***County Level***
 
 ```{r}
 table_data = as.data.table(cattleinv_data_county)
@@ -306,6 +345,7 @@ table_data %>%
   formatCurrency('Value',currency = "", interval = 3, mark = ",", digits = 0)
 
 ```
+
 
 #### Kentucky
 
@@ -329,6 +369,12 @@ table_data %>%
 ```
 
 ```{r}
+
+```
+
+This project presents a macro picture of the industry with 4 main variables: production, international trade, price, and consumption. Production, international trade, and price sections include both cattle and beef sectors' data. Consumption figures are per capita values and beef is compared with pork and chicken per capita consumption.
+
+```{r}
 table_data = table_data %>%
   .[, Value:=Value/1000]%>%
    .[State=="KENTUCKY"] %>%
@@ -337,11 +383,7 @@ table_data = table_data %>%
 #table_data =table_data[order(-year)]
 table_data[, pct_change := (Value/lead(Value) - 1)*100]
 table_data = as.data.frame(table_data)
-```
 
-This project presents a macro picture of the industry with 4 main variables: production, international trade, price, and consumption. Production, international trade, and price sections include both cattle and beef sectors' data. Consumption figures are per capita values and beef is compared with pork and chicken per capita consumption.
-
-```{r}
 g1 = ggplot(table_data, aes(x = Year, y = Value)) + 
   labs(title = "a) Kentucky Cattle Inventory-1000 heads") +
   geom_line(color="orange") +
@@ -361,7 +403,7 @@ g2 = ggplot(table_data, aes(x = Year, y = `pct_change`)) +
 plot_grid(g1, g2)
 ```
 
-*County Level*
+***County Level***
 
 ```{r}
 table_data = as.data.table(cattleinv_data_county)
@@ -400,7 +442,6 @@ g1$layers[[2]]$aes_params$size =3
 g1
 ```
 
-
 ### 3.1.2. Beef
 
 <center>
@@ -413,20 +454,17 @@ table_data %>%
   .[order(-year)]%>% 
   .[, pct_change := (production/lead(production) - 1)]%>%
   datatable(table_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 6: U.S. Beef Production')
+    style = 'caption-side: top; text-align: center;', ('Table 6: U.S. Beef Production: 1970-2021')
   ), colnames = c('Year', 'Million pounds', 'Annual Change'))%>%
   formatCurrency('production',currency = "", interval = 3, mark = ",", digits = 0)%>%
   formatPercentage('pct_change', 1)
 ```
 
-```{r}
-table_data =table_data[order(-year)]
-table_data[, pct_change := (production/lead(production) - 1)*100]
-```
-
 This project presents a macro picture of the industry with 4 main variables: production, international trade, price, and consumption. Production, international trade, and price sections include both cattle and beef sectors' data. Consumption figures are per capita values and beef is compared with pork and chicken per capita consumption.
 
 ```{r}
+table_data =table_data[order(-year)]
+table_data[, pct_change := (production/lead(production) - 1)*100]
 
 g1 = ggplot(table_data, aes(x=year,y =production)) + 
   labs(title ="a) U.S. Beef Production-Million pounds")+
@@ -459,6 +497,17 @@ variable.name = "year", value.name = "export")
 export_data_cattle = as.data.table(export_data_cattle, key="country")
 export_data_cattle[, export:=export/1000]
 ```
+
+```{r}
+table_data = as.data.table(export_data_cattle)
+table_data %>%
+  datatable(table_data,caption = htmltools::tags$caption(
+    style = 'caption-side: top; text-align: center;', ('Table 1: U.S. Beef Cattle Exports: 1989-2021')
+  ), colnames = c('Country', '# Year', 'Value-'))%>%
+  formatCurrency('export',currency = "", interval = 3, mark = ",", digits = 0)
+
+```
+
 
 
 ```{r}
@@ -524,6 +573,16 @@ import_data_cattle[, import:=import/1000]
 ```
 
 ```{r}
+table_data = as.data.table(import_data_cattle)
+table_data %>%
+  datatable(table_data,caption = htmltools::tags$caption(
+    style = 'caption-side: top; text-align: center;', ('Table 1: U.S. Beef Cattle Imports: 1989-2021')
+  ), colnames = c('Country', '# Year', 'Value-'))%>%
+  formatCurrency('import',currency = "", interval = 3, mark = ",", digits = 0)
+
+```
+
+```{r}
 cattle_imports = import_data_cattle[year =="2021" ]
 setorderv(cattle_imports, cols="import",  order=-1L, na.last=TRUE)
 ```
@@ -579,7 +638,7 @@ ggplot(data1, aes(x = "" , y = import_share, fill=fct_inorder(country))) +
 cattle_trade_data = merge( export_data_cattle,import_data_cattle, by = c("country", "year"), all=T)
 cattle_trade_data = cattle_trade_data[, trade_balance:= export-import] 
 cattle_trade_data = cattle_trade_data[, us_status:= ifelse(trade_balance<0, "net_importer", "net_exporter")] 
-total_cattle_trade = cattle_trade_data[country=="total"]
+total_cattle_trade = cattle_trade_data[country=="Total"]
 setorder(total_cattle_trade, cols = -"year") 
 
 table_data = as.data.table(total_cattle_trade)
@@ -737,7 +796,7 @@ beef_trade_data = merge( export_data,import_data, by = c("country", "year"), all
 beef_trade_data = beef_trade_data[, trade_balance:= export-import] 
 beef_trade_data = beef_trade_data[, us_status:= ifelse(trade_balance<0, "net_importer", "net_exporter")] 
 
-beef_total_trade = beef_trade_data[country=="total" ]
+beef_total_trade = beef_trade_data[country=="Total" ]
 setorder(beef_total_trade, cols = -"year") 
 
 table_data = as.data.table(beef_total_trade)
