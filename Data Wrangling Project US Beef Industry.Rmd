@@ -232,7 +232,7 @@ The maximum value was 45.7 million on January 1, 1975 and the lowest number was 
 <center>
 <a href="https://unsplash.com/photos/1AKuVmQxUkU" target="_blank">![](images/david-dolenc-1AKuVmQxUkU-unsplash.jpg){width=75%}<figcaption align="bottom"></a>Photo by David Dolenc</a></center>
 
-As we see from Figure 1 (a), beef cattle inventory has a decreasing trend since 1975 [<a href="https://www.beefmagazine.com/beef/beef-cattle-numbers-continue-decline" target="_blank">Source: An Article by Kenny Burdine (University of Kentucky) </a>]. 
+As we see from Figure 1 (a), beef cattle inventory has a decreasing trend since 1975 [<a href="https://www.beefmagazine.com/beef/beef-cattle-numbers-continue-decline" target="_blank">Source: An Article by Dr. Kenny Burdine (University of Kentucky) </a>]. 
 
 ```{r}
 table_data[,pct_change := (Value/lead(Value) - 1)*100]
@@ -390,8 +390,7 @@ table_data %>%
 
 #### **Kentucky** 
 
-*Please enjoy John Prine's great song <a href="https://www.youtube.com/watch?v=lYQ4WnFG_0I" target="_blank">My Old Kentucky Home</a> while reading this section!*
-
+*Please enjoy <a href="https://www.johnprine.com/" target="_blank">John Prine</a>'s great song <a href="https://www.youtube.com/watch?v=lYQ4WnFG_0I" target="_blank">My Old Kentucky Home</a> while reading this section!*
 
 <center>
 <a href="https://pixabay.com/photos/theatre-building-sign-kentucky-2703064/" target="_blank">![Foo](images/kentucky.jpg){width=50%}<figcaption align="bottom"></a>Photo by Danehrr22</a></center>
