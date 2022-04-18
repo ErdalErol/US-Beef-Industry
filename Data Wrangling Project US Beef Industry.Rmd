@@ -1,15 +1,15 @@
 ---
-title: "An Overview of the U.S. Beef Industry: 1920-2022"
+title: "Overview of the U.S. Beef Industry"
 author: "Erdal Erol"
 date: "`r Sys.Date()`"
 output: 
   html_document:
-    theme: sandstone 
+    theme: cerulean 
+    highlight: tango
     toc: true
     toc_float: true
     toc_depth: 5
-urlcolor: blue
-linkcolor: blue
+    code_folding: hide
 ---
 
 <style>
@@ -31,7 +31,13 @@ knitr::opts_chunk$set(echo = TRUE, error = TRUE, warning= FALSE, message = FALSE
 
 ```{r klippy, echo=FALSE, include=TRUE}
 #remotes::install_github("rlesur/klippy")
-klippy::klippy(position = c('top', 'right'))
+klippy::klippy(
+  lang = c("r", "markdown"),
+  all_precode = FALSE,
+  position = c("top", "right"),
+  color = "auto",
+  tooltip_message = "Copy code",
+  tooltip_success = "Copied!" )
 ```
 
 
@@ -39,7 +45,7 @@ klippy::klippy(position = c('top', 'right'))
 
 * Packages are employed to clean, modify, arrange, visualize, and map the data with the most widely used functions and techniques in the packages.
 
-* You will become familiar with beef industry's data and figures related to beef cattle inventory, beef production, international beef trade, prices, and consumption. Database covers the period from 1920 to 2022.
+* You will become familiar with beef industry's data and figures related to beef cattle inventory, beef production, international cattle and beef trade, cattle and beef prices, and consumption. Database covers the period from 1920 to 2022.
 
 * Tables provided in the project are mini databases, and you can search,sort, and filter columns to get data for year, country, state, and county of your interest.
 
@@ -111,13 +117,13 @@ This project presents facts and figures of the industry with 4 main variables: p
 ## 2.1. Data Sources
 <a href="https://quickstats.nass.usda.gov/" target="_blank">USDA National Agricultural Statistics Service</a> database is the data source of the project, unless stated otherwise.
 
-## 2.2. Data Import
+## 2.2. Data Import {.tabset}
 
 All data used in the project is provided at <a href="https://github.com/ErdalErol/US-Beef-Industry" target="_blank">github</a> repository of the project.
 
 ### 2.2.1. Production
 <p>&nbsp;</p>
-#### **Cattle**
+**Cattle**
 
 Beef cow inventory data is used for cattle production section. National, state and county level data is obtained for years available in the database. 
 
@@ -135,8 +141,9 @@ cattleinv_data_state_year =  read_csv("data/beef_cattle_inv_state_year.csv")
 ```{r}
 cattleinv_data_county =  read_csv("data/beef_cattle_inv_county_2021.csv")
 ```
+
 <p>&nbsp;</p>
-#### **Beef**
+**Beef**
 
 Beef production values are yearly production amount (million pounds). 
 
@@ -145,12 +152,11 @@ Beef production values are yearly production amount (million pounds).
 beef_prod_data = read_excel("data/yearly beef production.xlsx")
 ```
 
-
 ### 2.2.2. International Trade 
-
+<p>&nbsp;</p>
 Trade data is in quantities by partner countries across years. 
 <p>&nbsp;</p>
-#### **Cattle**
+**Cattle**
 
 * Export 
 
@@ -166,7 +172,7 @@ export_data_cattle = read_excel("data/cattle_trade.xlsx", sheet = "export")
 import_data_cattle = read_excel("data/cattle_trade.xlsx", sheet = "import")
 ```
 <p>&nbsp;</p>
-#### **Beef**
+**Beef**
 
 * Export
 
@@ -185,7 +191,7 @@ import_data = read_excel("data/beef_trade.xlsx", sheet = "import")
 
 ### 2.2.3. Prices
 <p>&nbsp;</p>
-#### **Cattle**
+**Cattle**
 
 Cattle prices are monthly 'prices received' values for beef cattle, calves, cows and steers and heifers.  All prices are dollars per cwt (hundred pounds of weight). 
 
@@ -194,7 +200,7 @@ Cattle prices are monthly 'prices received' values for beef cattle, calves, cows
 cattle_price_data = read_excel("data/feedercattle_prices.xlsx")
 ```
 <p>&nbsp;</p>
-#### **Beef**
+**Beef**
 
 Beef price data covers monthly farm, wholesale, and retail prices. All prices are in cents per pound. 
 
@@ -206,6 +212,18 @@ beef_price_data = read_excel("data/beef_prices.xlsx")
 
 ### 2.2.4. Consumption
 
+<p>&nbsp;</p>
+**Population**
+
+* U.S. Population: 1970-2021.
+
+```{r}
+beef_prod_data = read_excel("data/yearly beef production.xlsx")
+```
+
+<p>&nbsp;</p>
+**Consumption**
+
 Consumption data is in per capita values. 
 
 * U.S. Meat Consumption: 1909-2019.
@@ -215,12 +233,11 @@ beef_consmptn_data = read_excel("data/beef_consumption.xls")
 
 
 
-# 3. Beef Industry
+# 3. Beef Industry {.tabset}
 
+## 3.1. Production 
 
-## 3.1. Production
-
-### 3.1.1. Cattle
+### 3.1.1. Beef Cattle Inventory
 <p>&nbsp;</p>
 #### **National Level**
 
@@ -535,7 +552,7 @@ g1
 ```
 
 
-### 3.1.2. Beef
+### 3.1.2. Beef Production
 
 The total beef production was 28 billion pounds in 2021, 2.8% higher than 27.2 billion pounds in the previous year. 
 
@@ -594,10 +611,10 @@ plot_grid(g1, g2)
 
 
 ## 3.2. International Trade
+<p>&nbsp;</p>
+Canada and Mexico are the largest trading partner countries of U.S. in cattle and beef trade because of regional proximity and The North American Free Trade Agreement-NAFTA. Please see [<a href="https://www.kylivestockcoalition.org/beef-resources" target="_blank">the article</a>] for the details.    
 
-Canada and Mexico are the biggest partner countries for U.S. cattle and beef trade. This is because of regional proximity and The North American Free Trade Agreement-NAFTA. Please see [<a href="https://www.kylivestockcoalition.org/beef-resources" target="_blank">the article</a>] for the details.    
-
-### 3.2.1. Cattle 
+### 3.2.1. Cattle Trade
 
 <p>&nbsp;</p>
 #### **Export**
@@ -913,7 +930,7 @@ table_data %>%
 ```
 
 <p>&nbsp;</p>
-U.S. is net importer in cattle trade for the period 1989-2021 (***Figure 11***). 
+U.S. was net importer in cattle trade during the period 1989-2021 (***Figure 11***). 
 
 ```{r}
 table_data[is.na(table_data)] = 0
@@ -977,7 +994,7 @@ table_data %>%
 
 ```
 
-### 3.2.2. Beef 
+### 3.2.2. Beef Trade
 
 
 <p>&nbsp;</p>
@@ -1364,7 +1381,7 @@ beef_trade_data %>%
 ```
 
 <p>&nbsp;</p>
-U.S. is net importer in beef trade for 46 and net exporter for 6 years during the period 1970-2021. It has a positive trade balance for 2010-2013, 2018, and 2020.
+During the period 1970-2021, U.S. was net importer in beef trade for 46 years and net exporter for 6 years. 2010-2013, 2018, and 2020 are the periods it had a positive trade balance.
 
 ```{r}
 beef_trade_data[, .N, by=.(us_status )][]
@@ -1426,7 +1443,7 @@ table_data %>%
 
 ## 3.3. Prices
 <p>&nbsp;</p>
-### **Cattle**
+### 3.3.1. Cattle Prices
 
 ***Table 19*** and ***Figure 19*** show live cattle prices and trends in U.S. from 2012 to 2021.
 
@@ -1487,7 +1504,7 @@ table_data[,mean(steer_and_heifers[1:12])][]
 
 
 <p>&nbsp;</p>
-### **Beef**
+### 3.3.2. Beef Prices
 
 ***Table 20*** and ***Figure 21*** presents beef prices data and trends in U.S. from 1970 to 2021.
 
@@ -1539,7 +1556,7 @@ table_data[,mean(farm[109:120])][]
 table_data[,mean(wholesale[109:120])][]
 table_data[,mean(retail[109:120])][]
 ```
-
+<p>&nbsp;</p>
 #### ***Price Spreads***
 
 Price spread is calculated as the difference between two prices in the same supply chain.
@@ -1603,7 +1620,7 @@ ggplot(dt, aes(x = date, y = value)) +
 
 
 <p>&nbsp;</p>
-### **COVID-19 and Beef Prices**
+### 3.3.3. COVID-19 and Prices
 
 During the COVID-19 pandemic, we have observed unexpected price movements in the U.S. beef market due to the disruptions in the beef marketing channel.
 
@@ -1658,7 +1675,7 @@ ggplot(dt, aes(x = date, y = value)) +
 
 
 ## 3.4. Consumption
-
+<p>&nbsp;</p>
 We will look over the population data and trends, and then evaluate per capita beef consumption in U.S.
 
 <p>&nbsp;</p>
@@ -1684,7 +1701,7 @@ table_data %>%
 ```
 
 <p>&nbsp;</p>
-U.S. population has a positive trend but the growth rate has been decreasing during the period 1970-2021 (***Figure 24***). The maximum growth rate is 1.3% in 1971, and 1991-1993.  
+U.S. population has a positive trend but the growth rate has been decreasing during the period 1970-2021 (***Figure 24***). 1971 and 1991-1993 are the periods of the maximum growth rate - 1.3%.  
 
 ```{r}
 table_data= table_data = as.data.table(beef_prod_data[, c(1,9)])
@@ -1712,14 +1729,13 @@ plot_grid(g1, g2)
 ```
 
 
-### 3.4.2. Consumption
+### 3.4.2. Per Capita Consumption
 
 United States is one of the largest consumer of beef in the world in terms of per capita beef consumption. [<a href="https://beef2live.com/story-world-beef-consumption-per-capita-ranking-countries-0-111634#:~:text=The%20world%20consumed%20129.5%20billion,in%20the%20world%20in%202016." target="_blank">Source</a> 
 
 In 2019, per capita beef consumption was 55 pounds in U.S. compared to 49 pounds for pork and 66 pounds for chicken. 
 
 Data shows that beef had the highest per capita consumption value until 1975 (89 pounds) and began to decline. It was ranked first until 2011 and chicken has ranked first since then. 
-
 
 ```{r}
 table_data = as.data.table(beef_consmptn_data)
@@ -1781,7 +1797,7 @@ Data and figures highlight following facts about the industry:
   + Inventory has been decreasing since 1975. 10-20-30 year averages indicate a stable trend in inventory data.
   + Texas has been the state with the highest inventory since 1919. 
     - In 2022, the number was 4.5 million with a share of 15% of the total beef cows in the country.
-  + Kentucky is the 8th largest state in beef cattle inventory (January 1, 2022).  
+  + Kentucky is the 8^th^  largest state in beef cattle inventory (January 1, 2022).  
   + Holt County in Nebraska had the highest number of beef cows in 2021: 97,000. 
   
 * Beef production was 28 billion pounds in 2021.
