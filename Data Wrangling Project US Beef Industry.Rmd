@@ -35,7 +35,13 @@ klippy::klippy(position = c('top', 'right'))
 ```
 
 
-# Synopsis
+* This is a data wrangling project which aims to provide facts and figures of U.S. Beef industry using relevant R packages.
+
+* Packages are employed to clean, modify, arrange, visualize, and map the data with most common functions in the packages.
+
+* You will become familiar with beef industry's data and figures related to beef cattle inventory, beef production, international beef trade, prices, and consumption. Database covers the period from 1920 to 2022.
+
+* Tables provided in the projects are mini databases, and you can search and filter columns to get more detailed figures of your year, country, state, and county of interest.
 
 # Packages Required
 
@@ -56,6 +62,7 @@ library(data.table)
 library(ggplot2)
 library(ggrepel)
 library(cowplot)
+library(lubridate)
 #R interface/JavaScript-DataTables
 library(knitr)
 library(DT)
@@ -376,15 +383,15 @@ animated_map_data = table_data %>%
   
 setnames(animated_map_data,  "State", "state")
 
-# plot =
-#   plot_usmap(data = animated_map_data, values = "Value", labels = FALSE)  +
-#   scale_fill_continuous(name = "Beef Cattle Inventory",  low = "white", high = "purple", label = scales::comma) +
-#   labs(title = "Figure 3: Kentucky Beef Cattle Inventory by State 1972-2022", subtitle = 'Year: {closest_state}')+
-#   theme(plot.title = element_text(face="bold",size=20), legend.position = "right", plot.subtitle = element_text(face="bold",size=16),
-#         legend.title = element_text(face="bold",size=15), legend.text = element_text(size=12))+
-#    transition_states(Year)
-# 
-# animate(plot, fps = 5)
+plot =
+  plot_usmap(data = animated_map_data, values = "Value", labels = FALSE)  +
+  scale_fill_continuous(name = "Beef Cattle Inventory",  low = "white", high = "purple", label = scales::comma) +
+  labs(title = "Figure 3: Kentucky Beef Cattle Inventory by State 1972-2022", subtitle = 'Year: {closest_state}')+
+  theme(plot.title = element_text(face="bold",size=20), legend.position = "right", plot.subtitle = element_text(face="bold",size=16),
+        legend.title = element_text(face="bold",size=15), legend.text = element_text(size=12))+
+   transition_states(Year)
+
+animate(plot, fps = 5)
 ```
 
 <p>&nbsp;</p>
@@ -450,7 +457,6 @@ Kentucky has many different breeds of beef cattle but Angus cattle are one of th
 There are 33,823 beef cattle producers in the state and average herd size is about 31 head each. [<a href="https://kycattle.org/" target="_blank">Source</a>]   
 
 <a href="https://www.kentuckycattlemensbeef.com/lowe-family.html" target="_blank">The Lowe Family</a> from Warren county has been farming in Kentucky for 219 years. Please visit the link for the family's. 
-
 
 Similar to national beef inventory values across years, Kentucky beef inventory has been decreasing since 1975 when it has the highest number (1.43 million). 
 
@@ -565,7 +571,7 @@ table_data[,mean(production[32:52])][]
 table_data[,mean(production[22:52])][]
 ```
 <p>&nbsp;</p>
-Averages and ***Figure 6*** states that beef production has been stable with a slight fluctuation over the last 30 years. 
+Averages and ***Figure 6*** state that beef production has been stable with a slight fluctuation over the last 30 years. 
 
 ```{r}
 table_data =table_data[order(-year)]
@@ -593,10 +599,9 @@ Canada and Mexico are the biggest partner countries for U.S. cattle and beef tra
 
 ### 3.2.1. Cattle 
 
-
 <p>&nbsp;</p>
 #### **Export**
-U.S. cattle exports was 510 thousand heads in 2020 totaled 2.96 billion pounds, which decreased over 2 percent from 2019. T
+U.S. exported 510 thousand cattle in 2021, almost 60% higher than 2020 (***Table 7***).
 
 
 ```{r}
@@ -615,14 +620,31 @@ table_data %>%
     .[, c("year", "export")] %>%
     .[, pct_change := (export/lead(export) - 1)]%>%
   datatable(table_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 7: U.S. Beef Cattle Exports: 1989-2021')
+    style = 'caption-side: top; text-align: center;', ('Table 7: U.S. Cattle Exports: 1989-2021')
   ), colnames = c('Year', 'Export-1000 heads', 'Annual Change'))%>%
   formatCurrency('export',currency = "", interval = 3, mark = ",", digits = 0)%>%
   formatPercentage('pct_change', 1)
 
 ```
 <p>&nbsp;</p>
-Averages and ***Figure 6*** states that beef production has been stable with a slight fluctuation over the last 30 years. 
+Average cattle export values are;
+
+* 217,485 heads for 2012-2021
+* 156,098 heads for 2002-2021
+* 197,705 heads for 1989-2021.
+
+
+```{r}
+table_data = as.data.table(export_data_cattle)
+table_data = table_data %>% 
+    .[country=="Total"] %>%
+    .[order(-year)]%>% 
+    .[, c("year", "export")] 
+
+table_data[,mean(export[1:10])][]
+table_data[,mean(export[1:20])][]
+table_data[,mean(export[1:33])][]
+```
 
 ```{r}
 table_data = as.data.table(export_data_cattle)
@@ -650,21 +672,27 @@ g2 = ggplot(table_data, aes(x=year, y=pct_change))+
 plot_grid(g1, g2)
 ```
 
-
+<p>&nbsp;</p>
+U.S. cattle exports have been highly volatile over the data period (Averages and ***Figure 7***).
 
 <p>&nbsp;</p>
 ***By Countries***
+
+U.S. exported cattle to 34 countries in 2021. 
+
 ```{r}
 table_data = as.data.table(export_data_cattle)
-table_data %>% 
-    .[, c("country", "year", "export")] %>%
-  datatable(table_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 9: U.S. Beef Cattle Imports: 1989-2021')
-  ), colnames = c("Country",'Year', 'Export-1000 lbs'))%>%
-  formatCurrency('export',currency = "", interval = 3, mark = ",", digits = 0)
+table_data[is.na(table_data)] = 0
+table_data = table_data %>% 
+  .[, c("country", "year", "export")] %>%
+  .[country !="Total"]%>%
+  .[year ==2021]
 
+distinct(table_data[table_data[, .I[export != 0], by=year]$V1], country)
+count(distinct(table_data[table_data[, .I[export != 0], by=year]$V1], country))
 ```
-
+<p>&nbsp;</p>
+Of these countries, Canada's share was 77.1% and Mexico's share was 18.1% (***Table 9*** and ***Figure 8***). Their combined share is 95.2%.
 
 ```{r}
 cattle_exports = export_data_cattle[year =="2021"]
@@ -717,8 +745,11 @@ ggplot(data1, aes(x = "" , y = export_share, fill=fct_inorder(country))) +
   plot_theme
 ```
 
+
 <p>&nbsp;</p>
 #### **Import**
+
+U.S.  imported 1,775 thousand cattle in 2021, 16% lower than 2020  (***Table 9***). 
 
 ```{r}
 import_data_cattle = melt(import_data_cattle, id.vars ="country",
@@ -743,7 +774,25 @@ table_data %>%
   formatPercentage('pct_change', 1)
 
 ```
+<p>&nbsp;</p>
+Average cattle import values are;
 
+* 2.00 million heads for 2012-2021
+* 2.05 million for 2002-2021
+* 2.08 million heads for 1989-2021.
+
+
+```{r}
+table_data = as.data.table(import_data_cattle)
+table_data = table_data %>% 
+    .[country=="Total"] %>%
+    .[order(-year)]%>% 
+    .[, c("year", "import")] 
+
+table_data[,mean(import[1:10])][]
+table_data[,mean(import[1:20])][]
+table_data[,mean(import[1:33])][]
+```
 ```{r}
 table_data = as.data.table(import_data_cattle)
 table_data = 
@@ -769,21 +818,28 @@ g2 = ggplot(table_data, aes(x=year, y=pct_change))+
 
 plot_grid(g1, g2)
 ```
+<p>&nbsp;</p>
+U.S. cattle import are more stable comparing to exports over the data period (Averages and ***Figure 9***).
 
 <p>&nbsp;</p>
+
 ***By Countries***
+
+U.S. imported cattle from 2 countries in 2021:  Canada and Mexico.
 
 ```{r}
 table_data = as.data.table(import_data_cattle)
-table_data %>% 
-    .[, c("country", "year", "import")] %>%
-  datatable(table_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 9: U.S. Beef Cattle Imports: 1989-2021')
-  ), colnames = c("Country",'Year', 'Import-1000 lbs'))%>%
-  formatCurrency('import',currency = "", interval = 3, mark = ",", digits = 0)
+table_data[is.na(table_data)] = 0
+table_data = table_data %>% 
+  .[, c("country", "year", "import")] %>%
+  .[country !="Total"]%>%
+  .[year ==2021]
 
+distinct(table_data[table_data[, .I[import != 0], by=year]$V1], country)
+count(distinct(table_data[table_data[, .I[import != 0], by=year]$V1], country))
 ```
-
+<p>&nbsp;</p>
+Canada's share was 63.6% and Mexico's share was 36.4% (***Table 10*** and ***Figure 10***). 
 
 ```{r}
 cattle_imports = import_data_cattle[year =="2021" ]
@@ -837,6 +893,8 @@ ggplot(data1, aes(x = "" , y = import_share, fill=fct_inorder(country))) +
 <p>&nbsp;</p>
 #### **Trade Balance**
 
+***Table 11*** provides U.S. trade position in cattle trade for 1989-2021
+
 ```{r}
 cattle_trade_data = merge( export_data_cattle,import_data_cattle, by = c("country", "year"), all=T)
 cattle_trade_data = cattle_trade_data[, trade_balance:= export-import] 
@@ -854,6 +912,19 @@ table_data %>%
   formatCurrency(c('export','import', 'trade_balance'), currency = "", interval = 3, mark = ",", digits=0)
 ```
 
+<p>&nbsp;</p>
+U.S. is net importer in cattle trade for the period 1989-2021 (***Figure 11***). 
+
+```{r}
+table_data[is.na(table_data)] = 0
+table_data %>%
+  .[, country:= NULL]%>%
+  .[, trade_balance:=round(trade_balance, digits = 0)]
+
+table_data[, .N, by=.(us_status )][]
+```
+
+
 
 ```{r}
 dt = table_data %>%
@@ -868,7 +939,7 @@ dt =
   gather(key = "variable", value = "value", -year)
 
 ggplot(dt, aes(x = year, y = value)) + 
-  labs(title = "U.S. Cattle Trade-1000 lbs") +
+  labs(title = "Figure 11: U.S. Cattle Trade 1989-2021") +
   geom_line(aes(color = variable), size = 1) +
   scale_color_manual(values = c("orange", "lightblue", "red")) +
   theme_bw()+ 
@@ -880,6 +951,8 @@ ggplot(dt, aes(x = year, y = value)) +
 <p>&nbsp;</p>
 ***By Countries***
 
+***Table 12*** provides trade position for all countries. You can search countries and sort and/or filter by year to see U.S. trade with countries.
+
 ```{r}
 cattle_trade_data = merge( export_data_cattle,import_data_cattle, by = c("country", "year"), all=T)
 
@@ -888,25 +961,29 @@ cattle_trade_data[is.na(cattle_trade_data)] = 0
 cattle_trade_data = cattle_trade_data[, trade_balance:= export-import]
 
 
-cattle_trade_data = cattle_trade_data[, us_status:= ifelse(trade_balance<=0, "net_importer", "net_exporter")] 
+cattle_trade_data = as.data.frame(cattle_trade_data) %>% 
+  mutate(group = case_when(trade_balance<0 ~ "net_importer", 
+                           trade_balance==0 ~ "balanced", 
+                           trade_balance>0 ~"net_exporter" ))
+
 
 table_data = as.data.table(cattle_trade_data)
 table_data %>%
   .[, trade_balance:=round(trade_balance, digits = 0)]%>%  
   datatable(table_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 11: U.S. Cattle Trade-1000 heads')
+    style = 'caption-side: top; text-align: center;', ('Table 12: U.S. Cattle Trade by Country')
   ), colnames = c('Country','Year', 'Export', 'Import', 'Balance', 'Position'))%>%
   formatCurrency(c('export','import', 'trade_balance'), currency = "", interval = 3, mark = ",", digits=0)
 
 ```
-
-
 
 ### 3.2.2. Beef 
 
 
 <p>&nbsp;</p>
 #### **Export**
+
+U.S. exported 3,447 thousand pounds in 2021, 16.8% higher than 2020 (***Table 13***).
 
 ```{r}
 export_data = melt(export_data, id.vars ="country",
@@ -916,7 +993,6 @@ export_data = as.data.table(export_data, key="country")
 export_data[, export := export/1000]
 ```
 
-
 ```{r}
 table_data = as.data.table(export_data)
 table_data %>% 
@@ -925,11 +1001,30 @@ table_data %>%
     .[, c("year", "export")] %>%
     .[, pct_change := (export/lead(export) - 1)]%>%
   datatable(table_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 9: U.S. Beef Cattle Imports: 1989-2021')
+    style = 'caption-side: top; text-align: center;', ('Table 13: U.S. Beef Exports: 1989-2021')
   ), colnames = c('Year', 'Export-1000 lbs', 'Annual Change'))%>%
   formatCurrency('export',currency = "", interval = 3, mark = ",", digits = 0)%>%
   formatPercentage('pct_change', 1)
 
+```
+<p>&nbsp;</p>
+Average beef export values are;
+
+* 2.8 million pounds for 2012-2021
+* 2.3 million pounds for 2002-2021
+* 2.1 million pounds for 1989-2021.
+
+
+```{r}
+table_data = as.data.table(export_data)
+table_data = table_data %>% 
+    .[country=="Total"] %>%
+    .[order(-year)]%>% 
+    .[, c("year", "export")] 
+
+table_data[,mean(export[1:10])][]
+table_data[,mean(export[1:20])][]
+table_data[,mean(export[1:33])][]
 ```
 
 ```{r}
@@ -944,33 +1039,48 @@ table_data =
 table_data[, year:= as.numeric(as.character(year))]
 
 g1 = ggplot(table_data, aes(x=year, y = export)) + 
-  labs(title ="Figure 11: a) U.S. Cattle Export-1989-2021")+
+  labs(title ="Figure 12: a) U.S. Beef Export-1989-2021")+
   geom_line(color="orange")+
   theme_bw()+
-  plot_theme
+  plot_theme+
+  geom_rect(aes(xmin = 2003, xmax = 2011, ymin = 400 , ymax =2600),
+               fill = "transparent", color = "black", size = 1, linetype="dashed")+
+  annotate("text", y =2000, x = 2006, label = "BSE Bans", size =4, color = "red", angle = 0)
 
 g2 = ggplot(table_data, aes(x=year, y=pct_change))+ 
-  labs(title ="Figure 7: b) U.S. Cattle Export-1989-2021, % Annual Change")+
+  labs(title ="Figure 12: b) U.S. Beef Export-1989-2021, % Annual Change")+
   geom_line(color="orange")+
   theme_bw()+
-  plot_theme
+  plot_theme+
+  geom_rect(aes(xmin = 2003, xmax = 2011, ymin = -81 , ymax =65),
+               fill = "transparent", color = "black", size = 1, linetype="dashed")
 
 plot_grid(g1, g2)
 ```
+
+U.S. beef exports have been stable between 1989-2021 except for the period 2004-2011 where we see annual changes values of -81.7%(2004) and 64%(2006) (Averages and ***Figure 12***).
+
+Bovine Spongiform Encephalopathy (BSE) is the reason for the decline in 2004 (81.7%). 53 countries banned imports of U.S. beef and beef  products. See [<a href="https://agecon.unl.edu/cornhusker-economics/2014/u.s.-beef-trade-disruptions#:~:text=Beef%20exports%20totaled%20%243%20billion,repairing%20the%20beef%20export%20market." target="_blank">the article in the link</a>] for details.
+
 <p>&nbsp;</p>
 ***By Countries***
 
+U.S. exported beef to 126 countries in 2021. 
 
 ```{r}
 table_data = as.data.table(export_data)
-table_data %>% 
-    .[, c("country", "year", "export")] %>%
-  datatable(table_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 9: U.S. Beef Cattle Imports: 1989-2021')
-  ), colnames = c("Country",'Year', 'Export-1000 lbs'))%>%
-  formatCurrency('export',currency = "", interval = 3, mark = ",", digits = 0)
+table_data[is.na(table_data)] = 0
+table_data = table_data %>% 
+  .[, c("country", "year", "export")] %>%
+  .[country !="Total"]%>%
+  .[year ==2021]
 
+distinct(table_data[table_data[, .I[export != 0], by=year]$V1], country)
+count(distinct(table_data[table_data[, .I[export != 0], by=year]$V1], country))
 ```
+
+<p>&nbsp;</p>
+Of these countries, Japan's share was 24%, South Korea's share was 22.8%, and China's share was 15.7% (***Table 14*** and ***Figure 13***). Their combined share is 62.5%.
 
 
 
@@ -998,7 +1108,7 @@ knitr::kable(
   table_data[1:11],
   col.names = c('Country', 'Share-%'),
   align = "lccrr",
-  caption = "Table 10:U.S. Beef Exports by Country"
+  caption = "Table 14:U.S. Beef Exports by Country"
 )
 
 ```
@@ -1012,7 +1122,7 @@ data2 <- data1 %>%
 
 data2 = as.data.frame(data2)
 ggplot(data1, aes(x = "" , y = export_share, fill=fct_inorder(country))) +
-  labs(title = "U.S. Beef Exports Country Shares - %")+
+  labs(title = "Figure 13: U.S. Beef Exports Country Shares")+
   geom_col(width = 1, color = 1) +
   coord_polar(theta = "y") +
   scale_fill_brewer(palette = "Pastel1") +
@@ -1023,8 +1133,45 @@ ggplot(data1, aes(x = "" , y = export_share, fill=fct_inorder(country))) +
   theme_bw()+
   plot_theme
 ```
+
+<p>&nbsp;</p>
+***Figure 14*** is the map of top 10 markets for U.S. beef exports in 2021.  [<a href="https://www.r-bloggers.com/2017/02/how-to-make-a-global-map-in-r-step-by-step/" target="_blank">A helpful blog for complete global map tutorial</a>]   
+
+```{r}
+global_map_data= data[1:10]
+global_map_data$Rank = rank(-global_map_data$export_share)
+as.factor(global_map_data$country) %>% levels()
+
+map_world = map_data("world")
+
+joined_data = left_join(map_world, global_map_data, by = c('region' = 'country'))
+
+joined_data <- joined_data %>% mutate(fill_flg = ifelse(is.na(Rank),F,T))
+
+ggplot() +
+  geom_polygon(data = joined_data, aes(x = long, y = lat, group = group, fill = fill_flg)) +
+  scale_fill_manual(values = c("white","orange")) +
+  geom_point(data = joined_data, aes(x = long, y = lat), color = "black", size=0.25) +
+  labs(title = 'Figure 14:Top 10 Markets for U.S. Beef Exports-2021') +
+  theme(text = element_text(family = "Gill Sans", color = "#FFFFFF")
+        ,panel.background = element_rect(fill = "lightblue")
+        ,plot.background = element_rect(fill = "#444444")
+        ,panel.grid = element_blank()
+        ,plot.title = element_text(size = 20)
+        ,plot.subtitle = element_text(size = 10)
+        ,axis.text = element_blank()
+        ,axis.title = element_blank()
+        ,axis.ticks = element_blank()
+        ,legend.position = "none"
+        )
+
+```
+
+
 <p>&nbsp;</p>
 #### **Import**
+
+U.S. imported 3,348 thousand pounds beef in 2021, 0.2% higher than 2020 (***Table 15***).
 
 ```{r}
 import_data = melt(import_data, id.vars ="country",
@@ -1043,11 +1190,29 @@ table_data %>%
     .[, c("year", "import")] %>%
     .[, pct_change := (import/lead(import) - 1)]%>%
   datatable(table_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 9: U.S. Beef Cattle Imports: 1989-2021')
+    style = 'caption-side: top; text-align: center;', ('Table 15: U.S. Beef Imports: 1989-2021')
   ), colnames = c('Year', 'Import-1000 lbs', 'Annual Change'))%>%
   formatCurrency('import',currency = "", interval = 3, mark = ",", digits = 0)%>%
   formatPercentage('pct_change', 1)
 
+```
+<p>&nbsp;</p>
+Average beef import values are;
+
+* 2.95 million pounds for 2012-2021
+* 2.93 million pounds for 2002-2021
+* 2.76 million pounds for 1989-2021.
+
+```{r}
+table_data = as.data.table(import_data)
+table_data = table_data %>% 
+    .[country=="Total"] %>%
+    .[order(-year)]%>% 
+    .[, c("year", "import")] 
+
+table_data[,mean(import[1:10])][]
+table_data[,mean(import[1:20])][]
+table_data[,mean(import[1:33])][]
 ```
 
 ```{r}
@@ -1062,33 +1227,41 @@ table_data =
 table_data[, year:= as.numeric(as.character(year))]
 
 g1 = ggplot(table_data, aes(x=year, y = import)) + 
-  labs(title ="Figure 9: a) U.S. Cattle Import-1989-2021")+
+  labs(title ="Figure 15: a) U.S. Beef Import-1989-2021")+
   geom_line(color="orange")+
   theme_bw()+
   plot_theme
 
 g2 = ggplot(table_data, aes(x=year, y=pct_change))+ 
-  labs(title ="Figure 9: b) U.S. Cattle Import-1989-2021, % Annual Change")+
+  labs(title ="Figure 15: b) U.S. Beef Import-1989-2021, % Annual Change")+
   geom_line(color="orange")+
   theme_bw()+
   plot_theme
 
 plot_grid(g1, g2)
 ```
+Although 10-20-33 years average values are close to each other, U.S. beef imports have been more volatile comparing to exports during the period (***Figure 14***).
 
 <p>&nbsp;</p>
 ***By Countries***
 
+U.S. imported beef from 22 countries in 2021. 
+
 ```{r}
 table_data = as.data.table(import_data)
-table_data %>% 
-    .[, c("country", "year", "import")] %>%
-  datatable(table_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 9: U.S. Beef Cattle Imports: 1989-2021')
-  ), colnames = c("Country",'Year', 'Import-1000 lbs'))%>%
-  formatCurrency('import',currency = "", interval = 3, mark = ",", digits = 0)
+table_data[is.na(table_data)] = 0
+table_data = table_data %>% 
+  .[, c("country", "year", "import")] %>%
+  .[country !="Total"]%>%
+  .[year ==2021]
 
+distinct(table_data[table_data[, .I[import != 0], by=year]$V1], country)
+count(distinct(table_data[table_data[, .I[import != 0], by=year]$V1], country))
 ```
+
+<p>&nbsp;</p>
+Of these countries, Canada's share was 28.1%, Mexico's share was 20.2%, and New Zealand's share was 15.0% (***Table 16*** and ***Figure 15***). Their combined share is 63.3%.
+
 
 ```{r}
 beef_imports = import_data[year =="2021"]
@@ -1115,7 +1288,7 @@ knitr::kable(
   table_data[1:11],
   col.names = c('Country', 'Share-%'),
   align = "lccrr",
-  caption = "Table 11: U.S. Beef Imports by Country"
+  caption = "Table 16: U.S. Beef Imports by Country"
 )
 ```
 
@@ -1129,7 +1302,7 @@ data2 <- data1 %>%
 
 data2 = as.data.frame(data2)
 ggplot(data1, aes(x = "" , y = import_share, fill=fct_inorder(country))) +
-  labs(title = "U.S. Cattle Imports Country Shares - %")+
+  labs(title = "Figure 16: U.S. Beef Imports Country Shares")+
   geom_col(width = 1, color = 1) +
   coord_polar(theta = "y") +
   scale_fill_brewer(palette = "Pastel1") +
@@ -1140,9 +1313,41 @@ ggplot(data1, aes(x = "" , y = import_share, fill=fct_inorder(country))) +
   theme_bw()+
   plot_theme
 ```
+<p>&nbsp;</p>
+***Figure 17*** is the map of top 10 markets for U.S. beef imports in 2021.  
 
+```{r}
+global_map_data= data[1:10]
+global_map_data$Rank = rank(-global_map_data$import_share)
+as.factor(global_map_data$country) %>% levels()
+
+map_world = map_data("world")
+
+joined_data = left_join(map_world, global_map_data, by = c('region' = 'country'))
+
+joined_data <- joined_data %>% mutate(fill_flg = ifelse(is.na(Rank),F,T))
+
+ggplot() +
+  geom_polygon(data = joined_data, aes(x = long, y = lat, group = group, fill = fill_flg)) +
+  scale_fill_manual(values = c("white","purple")) +
+  geom_point(data = joined_data, aes(x = long, y = lat), color = "black", size=0.25) +
+  labs(title = 'Figure 17:Top 10 Markets for U.S. Beef Imports-2021') +
+  theme(text = element_text(family = "Gill Sans", color = "#FFFFFF")
+        ,panel.background = element_rect(fill = "lightblue")
+        ,plot.background = element_rect(fill = "#444444")
+        ,panel.grid = element_blank()
+        ,plot.title = element_text(size = 20)
+        ,plot.subtitle = element_text(size = 10)
+        ,axis.text = element_blank()
+        ,axis.title = element_blank()
+        ,axis.ticks = element_blank()
+        ,legend.position = "none"
+        )
+```
 <p>&nbsp;</p>
 #### **Trade Balance**
+
+***Table 17*** provides U.S. trade position in beef trade for 1970-2021.
 
 ```{r}
 beef_trade_data = as.data.table(beef_prod_data[, c(1,4,6)])
@@ -1152,10 +1357,20 @@ beef_trade_data = beef_trade_data[, us_status:= ifelse(trade_balance<0, "net_imp
 beef_trade_data %>%
   .[order(-year)]%>% 
   datatable(beef_trade_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 12: U.S. Beef Trade-1000 pounds')
+    style = 'caption-side: top; text-align: center;', ('Table 17: U.S. Beef Trade-1000 pounds')
   ), colnames = c('Year', 'Export', 'Import', 'Balance', 'Position'))%>%
   formatCurrency(c('export','import', 'trade_balance'), currency = "", interval = 3, mark = ",", digits=0)
 
+```
+
+<p>&nbsp;</p>
+U.S. is net importer in beef trade for 46 and net exporter for 6 years during the period 1970-2021. It has a positive trade balance for 2010-2013, 2018, and 2020.
+
+```{r}
+beef_trade_data[, .N, by=.(us_status )][]
+
+beef_trade_data%>%
+  .[us_status=="net_exporter"]
 ```
 
 ```{r}
@@ -1166,98 +1381,170 @@ dt =
   gather(key = "variable", value = "value", -year)
 
 ggplot(dt, aes(x = year, y = value)) + 
-  labs(title = "U.S. Beef Trade-1000 lbs") +
+  labs(title = "Figure 18: U.S. Beef Trade") +
   geom_line(aes(color = variable), size = 1) +
   scale_color_manual(values = c("orange", "lightblue", "red")) +
   theme_bw()+ 
   plot_theme+
   geom_hline(yintercept=0, linetype="dashed", 
                 color = "black", size=2)+
-  geom_rect(aes(xmin = 2000, xmax = 2010, ymin = -3270 , ymax =3900),
+  geom_rect(aes(xmin = 2003, xmax = 2010, ymin = -3270 , ymax =3900),
                fill = "transparent", color = "black", size = 1, linetype="dashed")+
-  annotate("text", y =300, x = 2005, label = "that is someething", size =5, angle = 0)
+  annotate("text", y =2000, x = 2006, label = "BSE Bans", size =4, color = "red", angle = 0)
 ```
 
 <p>&nbsp;</p>
 ***By Countries***
+
+***Table 18*** provides trade position for all countries. You can search countries and sort and/or filter by year to see U.S. trade with countries.
+
 ```{r}
 beef_trade_data = merge( export_data,import_data, by = c("country", "year"), all=T)
-beef_trade_data = beef_trade_data[, trade_balance:= export-import] 
-beef_trade_data = beef_trade_data[, us_status:= ifelse(trade_balance<0, "net_importer", "net_exporter")] 
+
+beef_trade_data[is.na(beef_trade_data)] = 0
+
+beef_trade_data = beef_trade_data[, trade_balance:= export-import]
+
+
+beef_trade_data = as.data.frame(beef_trade_data) %>% 
+  mutate(group = case_when(trade_balance<0 ~ "net_importer", 
+                           trade_balance==0 ~ "balanced", 
+                           trade_balance>0 ~ "net_exporter" ))
+
 
 table_data = as.data.table(beef_trade_data)
 table_data %>%
   .[, trade_balance:=round(trade_balance, digits = 0)]%>%  
   datatable(table_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 11: U.S. Cattle Trade-1000 heads')
-  ), colnames = c('Country', 'Year', 'Export', 'Import', 'Balance', 'Position'))%>%
+    style = 'caption-side: top; text-align: center;', ('Table 18: U.S. Beef Trade')
+  ), colnames = c('Country','Year', 'Export', 'Import', 'Balance', 'Position'))%>%
   formatCurrency(c('export','import', 'trade_balance'), currency = "", interval = 3, mark = ",", digits=0)
 
 ```
+
+
+
 ## 3.3. Prices
 <p>&nbsp;</p>
 ### **Cattle**
 
-```{r}
+***Table 19*** and ***Figure 19*** show live cattle prices and trends in U.S. from 2012 to 2021.
 
+```{r}
 table_data = as.data.table(cattle_price_data)
 
 table_data %>%
   .[order(-date)]%>% 
   .[, date:=as.character(date)] %>%
   datatable(table_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 13: U.S. Cattle Prices- Dollars per cwt')
+    style = 'caption-side: top; text-align: center;', ('Table 19: U.S. Cattle Prices, January 2012-December 2021- Dollars per cwt')
   ), colnames = c('Date','Beef Cattle','Calves', 'Cows','Steers/Heifers'))%>%
   formatCurrency(c('all_beef_cattle', 'calves', 'cows', 'steer_and_heifers'),currency = "", interval = 3, mark = ",", digits = 0)
 
 ```
+```{r}
+table_data = as.data.table(cattle_price_data)
+table_data = table_data %>% 
+  .[, ten_year_average_all := mean(all_beef_cattle), by = month(date)]%>% 
+  .[, ten_year_average_calves := mean(calves), by = month(date)]%>% 
+  .[, ten_year_average_cows := mean(cows), by = month(date)]%>% 
+  .[, ten_year_average_steer_and_heifers := mean(steer_and_heifers), by = month(date)]
+
+```  
 
 ```{r}
 dt = 
-  cattle_price_data %>% 
+  table_data %>% 
   as.data.frame(dt)  %>%
-  select(date, all_beef_cattle, calves, cows, steer_and_heifers) %>%
+  select(date, all_beef_cattle, calves, cows, steer_and_heifers, ten_year_average_all,ten_year_average_calves,ten_year_average_cows,ten_year_average_steer_and_heifers) %>%
   gather(key = "price", value = "value", -date)
 
 ggplot(dt, aes(x = date, y = value)) + 
-  labs(title = "U.S. Cattle Prices-Dollars per cwt") +
+  labs(title = "Figure 19: U.S. Cattle Prices-Dollars per cwt") +
   geom_line(aes(color = price), size = 1) +
-  scale_color_manual(values = c("orange", "lightblue", "lightgreen", "black")) +
+  scale_color_manual(values = c("orange", "lightblue", "lightgreen", "black", "red", "brown", "gray", "purple" )) +
   theme_bw()+
   plot_theme
 
 ```
+<p>&nbsp;</p>
+Average prices for 2021 are:
+
+* 120.83 for all beef cattle
+* 168.67 for calves
+* 70.13 for cows
+* 123.67 for steer and heifers.
+
+```{r}
+table_data= table_data%>%
+  .[order(-date)] 
+  
+table_data[,mean(all_beef_cattle[1:12])][]
+table_data[,mean(calves[1:12])][]
+table_data[,mean(cows[1:12])][]
+table_data[,mean(steer_and_heifers[1:12])][]
+```
+
 
 <p>&nbsp;</p>
 ### **Beef**
+
+***Table 20*** and ***Figure 21*** presents beef prices data and trends in U.S. from 1970 to 2021.
+
 ```{r}
 table_data = as.data.table(beef_price_data[, -c(5:7)])
 table_data %>%
   .[order(-date)]%>% 
   .[, date:=as.character(date)] %>%
   datatable(table_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 13: U.S. Beef Prices- Cents per pound')
+    style = 'caption-side: top; text-align: center;', ('Table 20: U.S. Beef Prices- Cents per pound')
   ), colnames = c('Date', 'Farm','Wholesale','Retail'))%>%
   formatCurrency(c('farm','wholesale','retail'),currency = "", interval = 3, mark = ",", digits = 0)
 ```
+```{r}
+table_data = as.data.table(beef_price_data[505:624, -c(5:7)])
+table_data = table_data %>% 
+  .[, ten_year_average_farm := mean(farm), by = month(date)]%>% 
+  .[, ten_year_average_wholesale := mean(wholesale), by = month(date)]%>% 
+  .[, ten_year_average_retail := mean(retail), by = month(date)]
+
+```  
+
 
 ```{r}
 dt = 
-  beef_price_data[300:624, -c(5:7), with=FALSE] %>% 
+  table_data %>% 
   as.data.frame(dt)  %>%
-  select(date, farm, wholesale, retail) %>%
+  select(date, farm, wholesale, retail,ten_year_average_farm,ten_year_average_wholesale,ten_year_average_retail) %>%
   gather(key = "price", value = "value", -date)
 
 ggplot(dt, aes(x = date, y = value)) + 
-  labs(title = "U.S. Beef Prices-cents per pound") +
+  labs(title = "Figure 20: U.S. Beef Prices-cents per pound") +
   geom_line(aes(color = price), size = 1) +
-  scale_color_manual(values = c("orange", "lightblue", "lightgreen")) +
+  scale_color_manual(values = c("orange", "lightblue", "lightgreen","black", "red", "brown")) +
   theme_bw()+
   plot_theme
 
-#geom_rect(aes(xmin = 2018, xmax = 2020, ymin = 200 , ymax =700),fill = "transparent", color = "black", size = 1, linetype="dashed")
 ```
 
+<p>&nbsp;</p>
+Average prices for 2021 are:
+
+* 266.7 for farm
+* 423.2 for wholesale
+* 70.13 for retail.
+
+```{r}
+table_data[,mean(farm[109:120])][]
+table_data[,mean(wholesale[109:120])][]
+table_data[,mean(retail[109:120])][]
+```
+
+#### ***Price Spreads***
+
+Price spread is calculated as the difference between two prices in the same supply chain.
+
+U.S. beef price spreads are given in ***Table 21***.
 
 ```{r}
 table_data = as.data.table(beef_price_data[, -c(2:4)])
@@ -1265,33 +1552,123 @@ table_data %>%
   .[order(-date)]%>% 
   .[, date:=as.character(date)] %>%
   datatable(table_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 14: U.S. Beef Price Spreads- Cents per pound')
+    style = 'caption-side: top; text-align: center;', ('Table 21: U.S. Beef Price Spreads- Cents per pound')
   ), colnames = c('Date', 'Farm-Retail','Farm-Wholesale','Wholesale-Retail'))%>%
   formatCurrency(c('farm-retail','farm-wholesale','wholesale-retail'),currency = "", interval = 3, mark = ",", digits = 0)
 
 ```
 
+<p>&nbsp;</p>
+Average price spreads for 2021 are:
+
+* 457.81 for farm to retail
+* 156.5 for farm to wholesale
+* 301.3 for wholesale to retail.
+
 ```{r}
-dt = 
-  beef_price_data[, -c(2:4), with=FALSE] %>% 
-  as.data.frame(dt)  %>%
-  select(date, `farm-retail`, `farm-wholesale`, `wholesale-retail`) %>%
-  gather(key = "spread", value = "value", -date)
-
-
-ggplot(dt, aes(x = date, y = value)) + 
-  labs(title = "U.S. Beef Price Spreads") +
-  geom_line(aes(color = spread), size = 1) +
-  scale_color_manual(values = c("orange", "lightblue", "lightgreen")) +
-  theme_bw()+
-  plot_theme
+table_data= table_data%>%
+  .[order(-date)] 
+  
+table_data[,mean(`farm-retail`[1:12])][]
+table_data[,mean(`farm-wholesale`[1:12])][]
+table_data[,mean(`wholesale-retail`[1:12])][]
 ```
 
+```{r}
+table_data = as.data.table(beef_price_data[505:624, c(1,5:7)])
+table_data = table_data %>% 
+  .[, ten_year_average_farmtoretail := mean(`farm-retail`), by = month(date)]%>% 
+  .[, ten_year_average_farmtowholesale := mean(`farm-wholesale`), by = month(date)]%>% 
+  .[, ten_year_average_wholesaletoretail := mean(`wholesale-retail`), by = month(date)]
+
+```  
+
+
+```{r}
+dt = 
+  table_data %>% 
+  as.data.frame(dt)  %>%
+  select(date, `farm-retail`, `farm-wholesale`, `wholesale-retail` ,ten_year_average_farmtoretail,ten_year_average_farmtowholesale,ten_year_average_wholesaletoretail) %>%
+  gather(key = "price", value = "value", -date)
+
+ggplot(dt, aes(x = date, y = value)) + 
+  labs(title = "Figure 21: U.S. Beef Prices-cents per pound") +
+  geom_line(aes(color = price), size = 1) +
+  scale_color_manual(values = c("orange", "lightblue", "lightgreen","black", "red", "brown")) +
+  theme_bw()+
+  plot_theme
+
+```
+
+
+
+<p>&nbsp;</p>
+### **COVID-19 and Beef Prices**
+
+During the COVID-19 pandemic, we have observed unexpected price movements in the U.S. beef market due to the disruptions in the beef marketing channel.
+
+All cattle prices declined during the pandemic (***Figure 22***). We can observe that farm level beef prices also  decreased during the pandemic. On the other hand, wholesale and retail level beef prices had price hikes during the pandemic (***Figure 23***). 
+
+Please see <a href="https://www.mdpi.com/2071-1050/14/8/4391" target="_blank">the article</a> for a detailed discussion of the price dynamics in U.S beef markets during the pandemic. 
+
+```{r}
+table_data= as.data.table(cattle_price_data)
+
+table_data$date = as.Date(table_data$date)
+
+dt = 
+  table_data[96:120] %>% 
+  as.data.frame(dt)  %>%
+  select(date, all_beef_cattle, calves, cows, steer_and_heifers) %>%
+  gather(key = "price", value = "value", -date)
+
+ggplot(dt, aes(x = date, y = value)) + 
+  labs(title = "Figure 22: U.S. Cattle Prices during COVID-19") +
+  geom_line(aes(color = price), size = 1) +
+  scale_color_manual(values = c("orange", "lightblue", "lightgreen", "black")) +
+  theme_bw()+
+  plot_theme+
+  geom_rect(data=dt, aes(xmin = as.Date("2020-02-01", "%Y-%m-%d")	, xmax = as.Date("2020-07-01", "%Y-%m-%d")	, ymin = 60 , ymax =180),
+               fill = "transparent", color = "black", size = 1, linetype="dashed")
+
+```
+
+```{r}
+table_data= as.data.table(beef_price_data[505:624,, c(1:4)])
+
+table_data$date = as.Date(table_data$date)
+
+dt = 
+  table_data[96:120] %>% 
+  as.data.frame(dt)  %>%
+  select(date, farm, wholesale, retail) %>%
+  gather(key = "price", value = "value", -date)
+
+ggplot(dt, aes(x = date, y = value)) + 
+  labs(title = "Figure 23:U.S. Beef Prices during COVID-19") +
+  geom_line(aes(color = price), size = 1) +
+  scale_color_manual(values = c("orange", "lightblue", "lightgreen", "black")) +
+  theme_bw()+
+  plot_theme+
+  geom_rect(data=dt, aes(xmin = as.Date("2020-02-01", "%Y-%m-%d")	, xmax = as.Date("2020-07-01", "%Y-%m-%d")	, ymin =200 , ymax =770),
+               fill = "transparent", color = "black", size = 1, linetype="dashed")
+
+
+```
+
+
 ## 3.4. Consumption
+
+We will look over the population data and trends, and then evaluate per capita beef consumption in U.S.
+
 <p>&nbsp;</p>
 <center>
 <a href="https://unsplash.com/photos/dZ-HI4EuWcA" target="_blank">![Foo](images/madie-hamilton-dZ-HI4EuWcA-unsplash.jpg){width=50%}<figcaption align = "bottom"></a>Photo by Madie Hamilton</a></center>
 <p>&nbsp;</p>
+
+### 3.4.1. Population
+
+U.S. population was 332.2 million in 2021, 0.1% higher than 2020 (***Table 22***).
 
 ```{r}
 table_data = as.data.table(beef_prod_data[, c(1,9)])
@@ -1299,32 +1676,34 @@ table_data %>%
   .[order(-year)]%>% 
   .[, pct_change := (population/lead(population) - 1)]%>%
   datatable(table_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 15: U.S. Popupation- Thousand')
+    style = 'caption-side: top; text-align: center;', ('Table 22: U.S. Popupation-Thousand')
   ), colnames = c('Year', 'Population','Annual Change'))%>%
   formatCurrency(c('population'),currency = "", interval = 3, mark = ",", digits = 0)%>%
   formatPercentage('pct_change', 1)
 
 ```
 
-This project presents a macro picture of the industry with 4 main variables: production, international trade, price, and consumption. Production, international trade, and price sections include both cattle and beef sectors' data. Consumption figures are per capita values and beef is compared with pork and chicken per capita consumption.
+<p>&nbsp;</p>
+U.S. population has a positive trend but the growth rate has been decreasing during the period 1970-2021 (***Figure 24***). The maximum growth rate is 1.3% in 1971, and 1991-1993.  
 
 ```{r}
-table_data[,pct_change := (population/lead(population)- 1)*100]
-table_data = as.data.frame(table_data)
+table_data= table_data = as.data.table(beef_prod_data[, c(1,9)])
+table_data = table_data %>%
+  .[order(-year)]%>% 
+  .[, pct_change := (population/lead(population) - 1)*100]
 
-table_data[,pct_change := (population/lead(population) - 1)*100]
 table_data = as.data.frame(table_data)
 ```
 
 ```{r}
 g1 = ggplot(table_data, aes(x=year, y=population))+ 
-  labs(title="a) U.S. Population-Thousand")+
+  labs(title="Figure 24: a) U.S. Population-Thousand")+
   geom_line(color ="orange")+
   theme_bw()+
   plot_theme
 
 g2 = ggplot(table_data, aes(x = year, y = pct_change))+ 
-  labs(title = "b) U.S. Population - Annual Change-%")+
+  labs(title = "Figure 24: b) U.S. Population - Annual Change-%")+
   geom_line(color = "orange")+
   theme_bw()+
   plot_theme
@@ -1332,19 +1711,22 @@ g2 = ggplot(table_data, aes(x = year, y = pct_change))+
 plot_grid(g1, g2)
 ```
 
-```{r}
-table_data[,pct_change :=(population/lag(population)-1)*100]
 
-```
+### 3.4.2. Consumption
 
-This project presents a macro picture of the industry with 4 main variables: production, international trade, price, and consumption. Production, international trade, and price sections include both cattle and beef sectors' data. Consumption figures are per capita values and beef is compared with pork and chicken per capita consumption.
+United States is one of the largest consumer of beef in the world in terms of per capita beef consumption. [<a href="https://beef2live.com/story-world-beef-consumption-per-capita-ranking-countries-0-111634#:~:text=The%20world%20consumed%20129.5%20billion,in%20the%20world%20in%202016." target="_blank">Source</a> 
+
+In 2019, per capita beef consumption was 55 pounds in U.S. compared to 49 pounds for pork and 66 pounds for chicken. 
+
+Data shows that beef had the highest per capita consumption value until 1975 (89 pounds) and began to decline. It was ranked first until 2011 and chicken has ranked first since then. 
+
 
 ```{r}
 table_data = as.data.table(beef_consmptn_data)
 table_data %>%
   .[order(-year)]%>% 
   datatable(table_data,caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: center;', ('Table 16: U.S. Meat Consumption - per capita- pound')
+    style = 'caption-side: top; text-align: center;', ('Table 23: U.S. Meat Consumption- per capita, pound')
   ), colnames = c('Year', 'Beef','Pork','Chicken'))%>%
   formatCurrency(c('beef','pork','chicken'),currency = "", interval = 3, mark = ",", digits = 0)
 
@@ -1352,42 +1734,81 @@ table_data %>%
 
 
 ```{r}
-
 dt = 
   as.data.frame(beef_consmptn_data)  %>%
   select(year, beef, pork, chicken) %>%
   gather(key = "per capita consumption", value = "value", -year)
 
 ggplot(dt, aes(x = year, y = value)) + 
-  labs(title = "U.S. Meat Consumption-pounds") +
+  labs(title = "Figure 25: U.S. Meat Consumption-pounds") +
   geom_line(aes(color = `per capita consumption`), size = 1) +
   scale_color_manual(values = c("orange", "lightblue", "lightgreen")) +
   theme_bw()+
-  plot_theme
+  plot_theme+
+  annotate(
+    geom = "curve", x = 1960, y = 87, xend = 1976, yend = 89, 
+    curvature = -.3, arrow = arrow(length = unit(3, "mm")) )+
+  annotate("text", y = 86, x = 1958, label = "max: 89 pounds in 1976", size =5, angle = 0, color = "red")+
+  geom_rect(aes(xmin = 2007, xmax = 2014, ymin = 53 , ymax =60),
+               fill = "transparent", color = "black", size = 1, linetype="dashed")+
+  annotate("text", y =62, x = 2011, label = "2011", size =4, color = "red", angle = 0)
 ```
 
 
 ```{r}
-
 dt = 
   as.data.frame(beef_consmptn_data)  %>%
   select(year, beef, pork, chicken) %>%
   gather(key = "per capita consumption", value = "value", -year)
 
-# ggplot(dt, aes(x = year, y = value)) +
-#   labs(title = "U.S. Meat Consumption-pounds") +
-#   geom_line(aes(color = `per capita consumption`), size = 1) +
-#   scale_color_manual(values = c("orange", "lightblue", "lightgreen")) +
-#   theme_bw()+
-#   plot_theme+
-#   transition_reveal(year)
+ggplot(dt, aes(x = year, y = value)) +
+  labs(title = "Figure 26: U.S. Meat Consumption-pounds") +
+  geom_line(aes(color = `per capita consumption`), size = 1) +
+  scale_color_manual(values = c("orange", "lightblue", "lightgreen")) +
+  theme_bw()+
+  plot_theme+
+  transition_reveal(year)
 
 ```
 
-
-
 # 4. Summary
 
+This R data wrangling project's objective is to present data and figures of the U.S. beef industry which has been one of the largest beef producer and consumer country in the world.
+
+Data and figures highlight following facts about the industry:
+
+* Beef cow inventory in the country was 30.1 million heads by January 1, 2022.
+  + Inventory has been decreasing since 1975. 10-20-30 year averages indicate a stable trend in inventory data.
+  + Texas has been the state with the highest inventory since 1919. 
+    - In 2022, the number was 4.5 million with a share of 15% of the total beef cows in the country.
+  + Kentucky is the 8th largest state in beef cattle inventory (January 1, 2022).  
+  + Holt County in Nebraska had the highest number of beef cows in 2021: 97,000. 
+  
+* Beef production was 28 billion pounds in 2021.
+  + It  has been stable with a slight fluctuation over the last 30 years.
+
+* International trade:
+  + Cattle trade is concentrated in 2 countries: Canada and Mexico. 
+    - Export: 510 thousands cattle in 2021, almost 60% higher than 2020.
+    - Import: 1,775 thousand cattle in 2021, 16% lower than 2020
+    - U.S. is net importer in cattle trade for the period 1989-2021. 
+  + Beef trade is more diversified in terms of partner markets.
+    - Export: 3,447 thousand pounds in 2021, 16.8% higher than 2020.
+    - Import: 3,348 thousand pounds beef in 2021, 0.2% higher than 2020
+    - U.S. is net importer in beef trade for 46 years and net exporter for 6 years during the period 1970-2021.
+    
+* Unexpected price movements in the U.S. beef market due to the disruptions in the beef marketing channel during the COVID-19 pandemic
+  + All cattle prices declined.
+  + Farm level beef prices also decreased. 
+  + Wwholesale and retail level beef prices had price hikes.
+  + Farmers in the U.S. beef supply chain were adversely affected by the COVID-19 pandemic. 
+  
+* Consumption
+  + U.S. population has a positive trend but the growth rate has been decreasing during the period 1970-2021.
+  + In 2019, per capita  consumption was 
+    - 55 pounds for beef,
+    - 49 pounds for pork,
+    - 66 pounds for chicken.
 
 
 # Contact
