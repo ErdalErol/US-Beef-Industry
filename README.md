@@ -1,4 +1,4 @@
-# U.S. Beef Industry
+# Overview of the U.S. Beef Industry
 
 * This is a data wrangling project which aims to provide facts and figures of U.S. Beef industry using relevant R packages.
 
