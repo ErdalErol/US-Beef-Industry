@@ -1,5 +1,5 @@
 ---
-title: "U.S. Beef Industry"
+title: "An Overview of the U.S. Beef Industry: 1920-2022"
 author: "Erdal Erol"
 date: "`r Sys.Date()`"
 output: 
@@ -37,11 +37,11 @@ klippy::klippy(position = c('top', 'right'))
 
 * This is a data wrangling project which aims to provide facts and figures of U.S. Beef industry using relevant R packages.
 
-* Packages are employed to clean, modify, arrange, visualize, and map the data with most common functions in the packages.
+* Packages are employed to clean, modify, arrange, visualize, and map the data with the most widely used functions and techniques in the packages.
 
 * You will become familiar with beef industry's data and figures related to beef cattle inventory, beef production, international beef trade, prices, and consumption. Database covers the period from 1920 to 2022.
 
-* Tables provided in the projects are mini databases, and you can search and filter columns to get more detailed figures of your year, country, state, and county of interest.
+* Tables provided in the project are mini databases, and you can search,sort, and filter columns to get data for year, country, state, and county of your interest.
 
 # Packages Required
 
@@ -259,7 +259,7 @@ The maximum value was 45.7 million on January 1, 1975 and the lowest number was 
 <a href="https://unsplash.com/photos/1AKuVmQxUkU" target="_blank">![](images/david-dolenc-1AKuVmQxUkU-unsplash.jpg){width=75%}<figcaption align="bottom"></a>Photo by David Dolenc</a></center>
 <p>&nbsp;</p>
 
-As we see from ***Figure 1***, beef cattle inventory has a decreasing trend since 1975 [<a href="https://www.beefmagazine.com/beef/beef-cattle-numbers-continue-decline" target="_blank">Source: A Article by Dr. Kenny Burdine (University of Kentucky) </a>]. However, average values imply that U.S beef cattle inventory has been relatively stable over last 30 years.
+As we see from ***Figure 1***, beef cattle inventory has a decreasing trend since 1975 [<a href="https://www.beefmagazine.com/beef/beef-cattle-numbers-continue-decline" target="_blank">Source: An Article by Dr. Kenny Burdine (University of Kentucky) </a>]. However, average values imply that U.S beef cattle inventory has been relatively stable over last 30 years.
 
 ```{r}
 table_data[,pct_change := (Value/lead(Value) - 1)*100]
@@ -289,7 +289,7 @@ plot_grid(g1, g2)
 
 ***Table 2*** provides inventory data for 50 states.  
 
-We can check for each state's inventory number by filtering and sorting data.
+You can check for each state's inventory number by filtering and sorting data.
 
 ```{r}
 table_data = as.data.table(cattleinv_data_state_year)
@@ -1803,7 +1803,7 @@ Data and figures highlight following facts about the industry:
   + Wholesale and retail level beef prices had price hikes.
   + Farmers in the U.S. beef supply chain were adversely affected by the COVID-19 pandemic. 
   
-* Consumption
+* Consumption:
   + U.S. population has a positive trend but the growth rate has been decreasing during the period 1970-2021.
   + In 2019, per capita  consumption was: 
     - 55 pounds for beef,
