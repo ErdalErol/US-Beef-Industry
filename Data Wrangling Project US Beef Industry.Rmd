@@ -1358,8 +1358,8 @@ beef_trade_data %>%
   .[order(-year)]%>% 
   datatable(beef_trade_data,caption = htmltools::tags$caption(
     style = 'caption-side: top; text-align: center;', ('Table 17: U.S. Beef Trade-1000 pounds')
-  ), colnames = c('Year', 'Export', 'Import', 'Balance', 'Position'))%>%
-  formatCurrency(c('export','import', 'trade_balance'), currency = "", interval = 3, mark = ",", digits=0)
+  ), colnames = c('Year', 'Import ', 'Export', 'Balance', 'Position'))%>%
+  formatCurrency(c('import','export', 'trade_balance'), currency = "", interval = 3, mark = ",", digits=0)
 
 ```
 
@@ -1800,12 +1800,12 @@ Data and figures highlight following facts about the industry:
 * Unexpected price movements in the U.S. beef market due to the disruptions in the beef marketing channel during the COVID-19 pandemic
   + All cattle prices declined.
   + Farm level beef prices also decreased. 
-  + Wwholesale and retail level beef prices had price hikes.
+  + Wholesale and retail level beef prices had price hikes.
   + Farmers in the U.S. beef supply chain were adversely affected by the COVID-19 pandemic. 
   
 * Consumption
   + U.S. population has a positive trend but the growth rate has been decreasing during the period 1970-2021.
-  + In 2019, per capita  consumption was 
+  + In 2019, per capita  consumption was: 
     - 55 pounds for beef,
     - 49 pounds for pork,
     - 66 pounds for chicken.
