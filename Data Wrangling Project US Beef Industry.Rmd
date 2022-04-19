@@ -263,20 +263,19 @@ Average beef cattle inventory numbers are;
 * 31.3 million for 2003-2022
 * 32.2 million for 1993-2022.
 
-
 ```{r}
 table_data[,mean(Value[1:10])][]
 table_data[,mean(Value[1:20])][]
 table_data[,mean(Value[1:30])][]
 ```
-
+<p>&nbsp;</p>
 The maximum value was 45.7 million on January 1, 1975 and the lowest number was 8.9 million on January 1, 1928 (*Sort and Search options can be used to filter table and sort data.*). 
 <p>&nbsp;</p>
 <center>
 <a href="https://unsplash.com/photos/1AKuVmQxUkU" target="_blank">![](images/david-dolenc-1AKuVmQxUkU-unsplash.jpg){width=75%}<figcaption align="bottom"></a>Photo by David Dolenc</a></center>
 <p>&nbsp;</p>
 
-As we see from ***Figure 1***, beef cattle inventory has a decreasing trend since 1975 [<a href="https://www.beefmagazine.com/beef/beef-cattle-numbers-continue-decline" target="_blank">Source: An Article by Dr. Kenny Burdine (University of Kentucky) </a>]. 10, 20, and 30 years average values are stable over last 30 years.
+As we see from ***Figure 1***, beef cattle inventory has a decreasing trend since 1975 [<a href="https://www.beefmagazine.com/beef/beef-cattle-numbers-continue-decline" target="_blank">Source: An Article by Dr. Kenny Burdine (University of Kentucky) </a>]. 10, 20, and 30 years average values are relatively stable.
 
 ```{r}
 table_data[,pct_change := (Value/lead(Value) - 1)*100]
@@ -475,7 +474,7 @@ Kentucky has many different breeds of beef cattle but Angus cattle are one of th
 
 There are 33,823 beef cattle producers in the state and average herd size is about 31 head each. [<a href="https://kycattle.org/" target="_blank">Source</a>]   
 
-<a href="https://www.kentuckycattlemensbeef.com/lowe-family.html" target="_blank">The Lowe Family</a> from Warren county has been farming in Kentucky for 219 years. Please visit the link for the details of the family's operation. 
+The Lowe Family from Warren county has been farming in Kentucky for 219 years. Please visit <a href="https://www.kentuckycattlemensbeef.com/lowe-family.html" target="_blank">the link</a> for the details of the family's operation. 
 
 Similar to national beef inventory values across years, Kentucky beef inventory has also been decreasing since 1975 when it has the highest number (1.43 million). 
 
@@ -614,7 +613,7 @@ plot_grid(g1, g2)
 
 ## 3.2. International Trade
 <p>&nbsp;</p>
-Canada and Mexico are the largest trading partner countries of U.S. in cattle and beef trade because of regional proximity and the North American Free Trade Agreement-NAFTA. Please see [<a href="https://www.kylivestockcoalition.org/beef-resources" target="_blank">the article</a>] for the details.    
+Canada and Mexico are the largest trading partner countries of U.S. in cattle and beef trade because of regional proximity and the North American Free Trade Agreement-NAFTA. Please see [<a href="https://www.fb.org/market-intel/nafta-wheres-the-beef" target="_blank">the article</a>] for the details.    
 
 ### 3.2.1. Cattle Trade
 
@@ -1733,7 +1732,7 @@ plot_grid(g1, g2)
 
 ### 3.4.2. Per Capita Consumption
 
-United States is one of the largest consumer of beef in the world in terms of per capita beef consumption. [<a href="https://beef2live.com/story-world-beef-consumption-per-capita-ranking-countries-0-111634#:~:text=The%20world%20consumed%20129.5%20billion,in%20the%20world%20in%202016." target="_blank">Source</a> 
+United States is one of the largest consumer of beef in the world in terms of per capita beef consumption. [<a href="https://beef2live.com/story-world-beef-consumption-per-capita-ranking-countries-0-111634#:~:text=The%20world%20consumed%20129.5%20billion,in%20the%20world%20in%202016." target="_blank">Source</a>] 
 
 In 2019, per capita beef consumption was 55 pounds in U.S. compared to 49 pounds for pork and 66 pounds for chicken. 
 
@@ -1831,7 +1830,7 @@ Data and figures highlight following facts about the industry:
 
 # Contact
 
-* Webpage: <a href="https://erdalerol.weebly.com/" target="_blank">erdalerol.weebly.com</a> 
+* Webpage: <a href="https://erdalerol.com/" target="_blank">erdalerol.weebly.com</a> 
 
 * Github: <a href="https://github.com/ErdalErol" target="_blank">@ErdalErol</a> 
 
