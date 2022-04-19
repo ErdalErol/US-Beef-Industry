@@ -1830,7 +1830,7 @@ Data and figures highlight following facts about the industry:
 
 # Contact
 
-* Webpage: <a href="https://erdalerol.com/" target="_blank">erdalerol.weebly.com</a> 
+* Webpage: <a href="https://erdalerol.com/" target="_blank">erdalerol.com</a> 
 
 * Github: <a href="https://github.com/ErdalErol" target="_blank">@ErdalErol</a> 
 
