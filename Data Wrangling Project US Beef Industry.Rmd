@@ -54,8 +54,8 @@ klippy::klippy(
 This project aims to provide facts and figures of U.S. beef industry with R data wrangling, visualization and mapping functions and techniques.
 
 * The most common functions in  ***tidyverse***, ***data.table***, ***ggplot2***, and ***usmap*** packages are employed. 
-* The packages ***knitr*** and ***DT*** are used to provide customized plots, images and tables for R markdown output. 
-* Animated plots and maps are produced with the packages ***gganimate***, ***gifski*** and ***png***. 
+* ***knitr*** and ***DT*** are used to provide customized plots, images and tables for R markdown output. 
+* Animated plots and maps are produced with ***gganimate***, ***gifski*** and ***png***. 
 
 ```{r packages}
 #install.packages("...")
@@ -119,13 +119,13 @@ This project presents facts and figures of the industry with 4 main variables: p
 
 ## 2.2. Data Import {.tabset}
 
-All data used in the project is provided at <a href="https://github.com/ErdalErol/US-Beef-Industry" target="_blank">github</a> repository of the project.
+All data used in the project are provided at <a href="https://github.com/ErdalErol/US-Beef-Industry" target="_blank">github</a> repository of the project.
 
 ### 2.2.1. Production
 <p>&nbsp;</p>
 **Cattle**
 
-Beef cow inventory data is used for cattle production section. National, state and county level data is obtained for years available in the database. 
+Beef cow inventory data is used for cattle production section. National, state and county level data are obtained for years available in the database. 
 
 * U.S. Beef Cattle Inventory: 1920-2022, January 1 Inventory Value of the Year.
 ```{r}
@@ -145,7 +145,7 @@ cattleinv_data_county =  read_csv("data/beef_cattle_inv_county_2021.csv")
 <p>&nbsp;</p>
 **Beef**
 
-Beef production values are yearly production amount (million pounds). 
+Beef production values are yearly production amounts (million pounds). 
 
 * U.S. Beef Production: 1970-2021.
 ```{r}
@@ -154,7 +154,7 @@ beef_prod_data = read_excel("data/yearly beef production.xlsx")
 
 ### 2.2.2. International Trade 
 <p>&nbsp;</p>
-Trade data is in quantities by partner countries across years. 
+Trade data are the amount (pound or head) of exports and imports between trade partner countries and United States. 
 <p>&nbsp;</p>
 **Cattle**
 
@@ -243,7 +243,7 @@ beef_consmptn_data = read_excel("data/beef_consumption.xls")
 
 ***Table 1*** shows U.S. beef cattle inventory. There were 30.1 million head of beef cows in U.S. as of January 1, 2022. 
 
-The number is 2.3% below from 2021. It has been decreasing since 2019. 
+The number is down 2.3% from 2021. It has been decreasing since 2019. 
 
 ```{r}
 table_data = as.data.table(cattleinv_data_yearly)
@@ -276,7 +276,7 @@ The maximum value was 45.7 million on January 1, 1975 and the lowest number was 
 <a href="https://unsplash.com/photos/1AKuVmQxUkU" target="_blank">![](images/david-dolenc-1AKuVmQxUkU-unsplash.jpg){width=75%}<figcaption align="bottom"></a>Photo by David Dolenc</a></center>
 <p>&nbsp;</p>
 
-As we see from ***Figure 1***, beef cattle inventory has a decreasing trend since 1975 [<a href="https://www.beefmagazine.com/beef/beef-cattle-numbers-continue-decline" target="_blank">Source: An Article by Dr. Kenny Burdine (University of Kentucky) </a>]. However, average values imply that U.S beef cattle inventory has been relatively stable over last 30 years.
+As we see from ***Figure 1***, beef cattle inventory has a decreasing trend since 1975 [<a href="https://www.beefmagazine.com/beef/beef-cattle-numbers-continue-decline" target="_blank">Source: An Article by Dr. Kenny Burdine (University of Kentucky) </a>]. 10, 20, and 30 years average values are stable over last 30 years.
 
 ```{r}
 table_data[,pct_change := (Value/lead(Value) - 1)*100]
@@ -443,10 +443,12 @@ table_data %>%
 Kentucky is the 8^th^ largest state in beef cattle inventory (January 1, 2022- ***Table 3 and 4***).
 <p>&nbsp;</p>
 <center>
-<a href="https://pixabay.com/photos/theatre-building-sign-kentucky-2703064/" target="_blank">![Foo](images/kentucky.jpg){width=50%}<figcaption align="bottom"></a>Photo by Danehrr22</a></center>
+<a href="https://unsplash.com/photos/JUeL5xDspgo" target="_blank">![Foo](images/kentucky.jpg){width=50%}<figcaption align="bottom"></a>Photo by Nik Shuliahin</a></center>
 <p>&nbsp;</p>
 
-As the largest cattle producing state east of the Mississippi River, Kentucky has about 966 thousand heads of beef cattle. The number is 0.7% below from 2021. 
+Kentucky had about 966 thousand heads of beef cattle. The number is 0.7% less than 2021. 
+
+It is still the largest cattle producing state east of the Mississippi River.
 
 ```{r}
 table_data = as.data.table(cattleinv_data_state_year)
@@ -473,9 +475,9 @@ Kentucky has many different breeds of beef cattle but Angus cattle are one of th
 
 There are 33,823 beef cattle producers in the state and average herd size is about 31 head each. [<a href="https://kycattle.org/" target="_blank">Source</a>]   
 
-<a href="https://www.kentuckycattlemensbeef.com/lowe-family.html" target="_blank">The Lowe Family</a> from Warren county has been farming in Kentucky for 219 years. Please visit the link for the family's. 
+<a href="https://www.kentuckycattlemensbeef.com/lowe-family.html" target="_blank">The Lowe Family</a> from Warren county has been farming in Kentucky for 219 years. Please visit the link for the details of the family's operation. 
 
-Similar to national beef inventory values across years, Kentucky beef inventory has been decreasing since 1975 when it has the highest number (1.43 million). 
+Similar to national beef inventory values across years, Kentucky beef inventory has also been decreasing since 1975 when it has the highest number (1.43 million). 
 
 ***Figure 4*** shows the trend and annual changes.
 
@@ -612,7 +614,7 @@ plot_grid(g1, g2)
 
 ## 3.2. International Trade
 <p>&nbsp;</p>
-Canada and Mexico are the largest trading partner countries of U.S. in cattle and beef trade because of regional proximity and The North American Free Trade Agreement-NAFTA. Please see [<a href="https://www.kylivestockcoalition.org/beef-resources" target="_blank">the article</a>] for the details.    
+Canada and Mexico are the largest trading partner countries of U.S. in cattle and beef trade because of regional proximity and the North American Free Trade Agreement-NAFTA. Please see [<a href="https://www.kylivestockcoalition.org/beef-resources" target="_blank">the article</a>] for the details.    
 
 ### 3.2.1. Cattle Trade
 
@@ -910,7 +912,7 @@ ggplot(data1, aes(x = "" , y = import_share, fill=fct_inorder(country))) +
 <p>&nbsp;</p>
 #### **Trade Balance**
 
-***Table 11*** provides U.S. trade position in cattle trade for 1989-2021
+***Table 11*** provides U.S. trade position in cattle trade for 1989-2021.
 
 ```{r}
 cattle_trade_data = merge( export_data_cattle,import_data_cattle, by = c("country", "year"), all=T)
@@ -968,7 +970,7 @@ ggplot(dt, aes(x = year, y = value)) +
 <p>&nbsp;</p>
 ***By Countries***
 
-***Table 12*** provides trade position for all countries. You can search countries and sort and/or filter by year to see U.S. trade with countries.
+***Table 12*** provides trade position for all countries. You can search countries and sort and/or filter by year to see U.S. trade with other countries.
 
 ```{r}
 cattle_trade_data = merge( export_data_cattle,import_data_cattle, by = c("country", "year"), all=T)
@@ -1075,9 +1077,9 @@ g2 = ggplot(table_data, aes(x=year, y=pct_change))+
 plot_grid(g1, g2)
 ```
 
-U.S. beef exports have been stable between 1989-2021 except for the period 2004-2011 where we see annual changes values of -81.7%(2004) and 64%(2006) (Averages and ***Figure 12***).
+U.S. beef exports have been stable between 1989-2021 except for the period 2004-2011 where we see annual change values of -81.7%(2004) and 64%(2006) (Averages and ***Figure 12***).
 
-Bovine Spongiform Encephalopathy (BSE) is the reason for the decline in 2004 (81.7%). 53 countries banned imports of U.S. beef and beef  products. See [<a href="https://agecon.unl.edu/cornhusker-economics/2014/u.s.-beef-trade-disruptions#:~:text=Beef%20exports%20totaled%20%243%20billion,repairing%20the%20beef%20export%20market." target="_blank">the article in the link</a>] for details.
+Bovine Spongiform Encephalopathy (BSE) is the reason for the decline in 2004 (81.7%). 53 countries banned imports of U.S. beef and beef  products. Please see [<a href="https://agecon.unl.edu/cornhusker-economics/2014/u.s.-beef-trade-disruptions#:~:text=Beef%20exports%20totaled%20%243%20billion,repairing%20the%20beef%20export%20market." target="_blank">the article in the link</a>] for details.
 
 <p>&nbsp;</p>
 ***By Countries***
@@ -1257,6 +1259,7 @@ g2 = ggplot(table_data, aes(x=year, y=pct_change))+
 
 plot_grid(g1, g2)
 ```
+<p>&nbsp;</p>
 Although 10-20-33 years average values are close to each other, U.S. beef imports have been more volatile comparing to exports during the period (***Figure 14***).
 
 <p>&nbsp;</p>
@@ -1413,7 +1416,7 @@ ggplot(dt, aes(x = year, y = value)) +
 <p>&nbsp;</p>
 ***By Countries***
 
-***Table 18*** provides trade position for all countries. You can search countries and sort and/or filter by year to see U.S. trade with countries.
+***Table 18*** provides trade position for all countries. You can search countries and sort and/or filter by year to see U.S. trade with other countries.
 
 ```{r}
 beef_trade_data = merge( export_data,import_data, by = c("country", "year"), all=T)
@@ -1545,7 +1548,7 @@ ggplot(dt, aes(x = date, y = value)) +
 ```
 
 <p>&nbsp;</p>
-Average prices for 2021 are:
+Average prices in 2021 are:
 
 * 266.7 for farm
 * 423.2 for wholesale
@@ -1576,7 +1579,7 @@ table_data %>%
 ```
 
 <p>&nbsp;</p>
-Average price spreads for 2021 are:
+Average price spreads in 2021 are:
 
 * 457.81 for farm to retail
 * 156.5 for farm to wholesale
@@ -1618,7 +1621,6 @@ ggplot(dt, aes(x = date, y = value)) +
 ```
 
 
-
 <p>&nbsp;</p>
 ### 3.3.3. COVID-19 and Prices
 
@@ -1626,7 +1628,7 @@ During the COVID-19 pandemic, we have observed unexpected price movements in the
 
 All cattle prices declined during the pandemic (***Figure 22***). We can observe that farm level beef prices also  decreased during the pandemic. On the other hand, wholesale and retail level beef prices had price hikes during the pandemic (***Figure 23***). 
 
-Please see <a href="https://www.mdpi.com/2071-1050/14/8/4391" target="_blank">the article</a> for a detailed discussion of the price dynamics in U.S beef markets during the pandemic. 
+Please see <a href="https://www.mdpi.com/2071-1050/14/8/4391" target="_blank">the article in the link</a> for a detailed discussion of the price dynamics in U.S beef markets during the pandemic. 
 
 ```{r}
 table_data= as.data.table(cattle_price_data)
@@ -1676,7 +1678,7 @@ ggplot(dt, aes(x = date, y = value)) +
 
 ## 3.4. Consumption
 <p>&nbsp;</p>
-We will look over the population data and trends, and then evaluate per capita beef consumption in U.S.
+We will first look over the population data and trends, and then evaluate per capita beef consumption in U.S.
 
 <p>&nbsp;</p>
 <center>
@@ -1701,7 +1703,7 @@ table_data %>%
 ```
 
 <p>&nbsp;</p>
-U.S. population has a positive trend but the growth rate has been decreasing during the period 1970-2021 (***Figure 24***). 1971 and 1991-1993 are the periods of the maximum growth rate - 1.3%.  
+U.S. population had a positive trend with a decreasing growth rate during the period 1970-2021 (***Figure 24***). 1971 and 1991-1993 are the periods of the maximum growth rate (1.3%).  
 
 ```{r}
 table_data= table_data = as.data.table(beef_prod_data[, c(1,9)])
@@ -1735,7 +1737,7 @@ United States is one of the largest consumer of beef in the world in terms of pe
 
 In 2019, per capita beef consumption was 55 pounds in U.S. compared to 49 pounds for pork and 66 pounds for chicken. 
 
-Data shows that beef had the highest per capita consumption value until 1975 (89 pounds) and began to decline. It was ranked first until 2011 and chicken has ranked first since then. 
+Data shows that beef had the highest per capita consumption value until 1975 (89 pounds). It was ranked first until 2011 and chicken has ranked first since then. 
 
 ```{r}
 table_data = as.data.table(beef_consmptn_data)
@@ -1796,18 +1798,18 @@ Data and figures highlight following facts about the industry:
 * Beef cow inventory in the country was 30.1 million heads by January 1, 2022.
   + Inventory has been decreasing since 1975. 10-20-30 year averages indicate a stable trend in inventory data.
   + Texas has been the state with the highest inventory since 1919. 
-    - In 2022, the number was 4.5 million with a share of 15% of the total beef cows in the country.
-  + Kentucky is the 8^th^  largest state in beef cattle inventory (January 1, 2022).  
+    - In 2022, the inventory was 4.5 million heads and the state had a share of 15% of the total beef cows in the country.
+  + Kentucky was the 8^th^  largest state in beef cattle inventory (January 1, 2022).  
   + Holt County in Nebraska had the highest number of beef cows in 2021: 97,000. 
   
 * Beef production was 28 billion pounds in 2021.
   + It  has been stable with a slight fluctuation over the last 30 years.
 
 * International trade:
-  + Cattle trade is concentrated in 2 countries: Canada and Mexico. 
+  + Cattle trade has been concentrated in 2 countries: Canada and Mexico. 
     - Export: 510 thousands cattle in 2021, almost 60% higher than 2020.
     - Import: 1,775 thousand cattle in 2021, 16% lower than 2020
-    - U.S. is net importer in cattle trade for the period 1989-2021. 
+    - U.S. was net importer in cattle trade for the period 1989-2021. 
   + Beef trade is more diversified in terms of partner markets.
     - Export: 3,447 thousand pounds in 2021, 16.8% higher than 2020.
     - Import: 3,348 thousand pounds beef in 2021, 0.2% higher than 2020
@@ -1820,7 +1822,7 @@ Data and figures highlight following facts about the industry:
   + Farmers in the U.S. beef supply chain were adversely affected by the COVID-19 pandemic. 
   
 * Consumption:
-  + U.S. population has a positive trend but the growth rate has been decreasing during the period 1970-2021.
+  + U.S. population had a positive trend with a decreasing growth rate during the period 1970-2021.
   + In 2019, per capita  consumption was: 
     - 55 pounds for beef,
     - 49 pounds for pork,
